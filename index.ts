@@ -8,6 +8,8 @@
 import { Client } from 'discord.js';
 import Bot from './bot/bot';
 import dotenv from 'dotenv';
+import { PrismaClient } from '@prisma/client';
+import Util from './bot/utils/utils';
 
 dotenv.config();
 
@@ -19,5 +21,8 @@ const client = new Client({
 })
 
 export const bot = new Bot(client);
+export const db = new PrismaClient()
 
 client.login(process.env.TOKEN);
+
+Util.getUUID("Gucci_Garrett")

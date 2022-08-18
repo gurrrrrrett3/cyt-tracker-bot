@@ -4,6 +4,7 @@ import CommandLoader from "./loaders/commandLoader";
 import ButtonManager from "./loaders/managers/buttonManager";
 import SelectMenuManager from "./loaders/managers/selectMenuManager";
 import ModalManager from "./loaders/managers/modalManager";
+import MapDatabaseManager from "./modules/map/mapDatabaseManager";
 
 export default class Bot {
 
@@ -26,5 +27,32 @@ export default class Bot {
     this.buttonManager = new ButtonManager(this.client);
     this.selectMenuManager = new SelectMenuManager(this.client);
     this.modalManager = new ModalManager(this.client);
+
+    // autocomplete handler
+
+    this.client.on("interactionCreate", async (interaction) => {
+      if (!interaction.isAutocomplete()) return
+
+      const autocomplete = interaction.options.getString("player")
+
+      if (!autocomplete) return
+
+      const players = await MapDatabaseManager.searchPlayer(autocomplete, {
+        limit: 10,
+      })
+
+      if (!players.length) return
+
+      interaction.respond(players.map((player) => {
+        return {
+          value: player,
+          name: player,
+        }
+      }))
+    })
   }
+
+  
+
+
 }

@@ -1,5 +1,5 @@
 {
-  "name": "discord-bot-template",
+  "name": "cyt-tracker-bot",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
@@ -19,7 +19,17 @@
   },
   "homepage": "https://github.com/gurrrrrrett3/discord-bot-template#readme",
   "dependencies": {
+    "@prisma/client": "^4.2.1",
     "discord.js": "^14.2.0",
-    "dotenv": "^16.0.1"
+    "dotenv": "^16.0.1",
+    "fuzzyset": "^1.0.7",
+    "node-fetch": "^2.6.7",
+    "node-html-parser": "^5.4.2-0",
+    "point-in-polygon": "^1.1.0",
+    "prisma": "^4.2.1"
+  },
+  "devDependencies": {
+    "@types/node-fetch": "^2.6.2",
+    "@types/point-in-polygon": "^1.1.1"
   }
 }

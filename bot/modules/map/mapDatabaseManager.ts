@@ -89,6 +89,7 @@ export default class MapDatabaseManager {
 
     if (!dbTown) {
       const owner = await this.getPlayer(town.mayor);
+      if (!owner) return console.error(`Could not find owner for ${town.name}, skipping`);
 
       dbTown = await db.town
         .create({

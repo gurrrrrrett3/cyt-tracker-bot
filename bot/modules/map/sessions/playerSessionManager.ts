@@ -5,6 +5,7 @@ import Player from "../resources/player";
 export default class PlayerSessionManager {
   public static async onJoin(player: Player) {
     const dbPlayer = await MapDatabaseManager.getPlayer(player.name, player.uuid);
+    if (!dbPlayer) return;
     const session = await db.session.create({
       data: {
         playerId: dbPlayer.id,
@@ -20,6 +21,7 @@ export default class PlayerSessionManager {
 
   public static async onLeave(player: Player) {
     const dbPlayer = await MapDatabaseManager.getPlayer(player.name, player.uuid);
+    if (!dbPlayer) return;
     const session = await db.session.findFirst({
       where: {
         playerId: dbPlayer.id,

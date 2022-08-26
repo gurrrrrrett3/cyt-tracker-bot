@@ -58,6 +58,25 @@ export default class Util {
         
     }
 
+    public static async getBatchUUIDs(usernames: string[]) {
+      if (usernames.length == 0) return []
+        const res = await fetch(`https://api.mojang.com/profiles/minecraft`, {
+            method: "POST",
+            body: JSON.stringify(usernames),
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+        const json = await res.json()
+
+        console.log(usernames, json)
+
+        return json as {
+            id: string;
+            name: string;
+        }[]
+    }
+
     public static formatDiscordTime( 
         time: number | Time | Date, 
         mode: 
@@ -110,4 +129,16 @@ export default class Util {
       public static distance(x1: number, z1: number, x2: number, z2: number) {
         return Math.sqrt(x1^2 + x2^2) + Math.sqrt(z1^2 + z2^2)
       }
+
+      public static randomizeArray<T>(array: T[]): T[] {
+        const newArray = [...array]
+        for (let i = 0; i < newArray.length; i++) {
+          const j = Math.floor(Math.random() * newArray.length)
+          const temp = newArray[i]
+          newArray[i] = newArray[j]
+          newArray[j] = temp
+        }
+        return newArray
+      }
+
 }

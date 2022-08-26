@@ -17,15 +17,25 @@ export default class MapDatabaseManager {
       })
       .catch((err) => console.error(err));
 
-    if (dbPlayer?.uuid.startsWith("Invalid") && uuid) {
-      db.player.update({
-        where: {
-          username,
-        },
-        data: {
-          uuid,
-        },
-      });
+    if (dbPlayer?.uuid.startsWith("Invalid")) {
+      const newPlayer = await db.player
+        .update({
+          where: {
+            username,
+          },
+          data: {
+            uuid: uuid || (await Util.getUUID(username)),
+          },
+          include: {
+            Session: true,
+          },
+        })
+        .catch((err) => console.error(err));
+
+      if (newPlayer) {
+        console.log(`Updated ${username}'s UUID, from ${dbPlayer.uuid} to ${newPlayer.uuid}`);
+        dbPlayer = newPlayer;
+      }
     }
 
     if (!dbPlayer) {
@@ -137,54 +147,108 @@ export default class MapDatabaseManager {
         });
 
       for await (const user of missingUsers) {
-        await db.player.create({
-          data: {
-            username: user.u,
-            uuid: user.i,
-            residentTownid: dbTown.id,
-            assistantTownId: town.assistants.includes(user.u) ? dbTown.id : undefined,
-          },
-        });
+        await db.player
+          .create({
+            data: {
+              username: user.u,
+              uuid: user.i,
+              residentTownid: dbTown.id,
+              assistantTownId: town.assistants.includes(user.u) ? dbTown.id : undefined,
+            },
+          })
+          .catch((err) => console.error(err));
       }
 
       // set assistant status
 
-      await db.player.updateMany({
-        where: {
-          AND: {
-            residentTownid: dbTown.id,
-            username: {
-              in: town.assistants,
+      await db.player
+        .updateMany({
+          where: {
+            AND: {
+              residentTownid: dbTown.id,
+              username: {
+                in: town.assistants,
+              },
             },
           },
-        },
-        data: {
-          assistantTownId: dbTown.id,
-        },
-      });
+          data: {
+            assistantTownId: dbTown.id,
+          },
+        })
+        .catch((err) => console.error(err));
     }
 
     return dbTown;
   }
 
   public static async onTeleport(oldPlayer: Player, newPlayer: Player) {
-    return await db.teleport.create({
-      data: {
-        player: {
-          connectOrCreate: {
-            where: {
-              uuid: oldPlayer.uuid,
+    return await db.teleport
+      .create({
+        data: {
+          player: {
+            connectOrCreate: {
+              where: {
+                uuid: oldPlayer.uuid,
+              },
+              create: {
+                username: oldPlayer.name,
+                uuid: oldPlayer.uuid,
+              },
             },
-            create: {
-              username: oldPlayer.name,
-              uuid: oldPlayer.uuid,
-            }
           },
+          from: oldPlayer.getLocation(),
+          to: newPlayer.getLocation(),
         },
-        from: oldPlayer.getLocation(),
-        to: newPlayer.getLocation(),
-      }
-    }).catch((err) => console.error(err));
+      })
+      .catch((err) => console.error(err));
   }
-  
+
+  public static async cleanPlayers() {
+    const players = await db.player.findMany({
+      where: {
+        uuid: {
+          contains: "Invalid",
+        },
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+    });
+
+    // ramdomze the order of the players and grab the first 10
+
+    const batch = Util.randomizeArray(players).slice(0, 10);
+
+    if (players.length === 0) return
+
+    const uuids = await Util.getBatchUUIDs(batch.map((p) => p.username));
+
+    for await (const uuid of uuids) {
+     await db.player.update({
+        where: {
+          username: uuid.name,
+        },
+        data: {
+          uuid: uuid.id,
+        },
+      }).catch((err) => console.error(err));
+
+      // remove this player from the batch
+      batch.splice(batch.findIndex((p) => p.username === uuid.name), 1);
+    }
+
+    // update the uuid of the remaining players
+    for await (const player of batch) {
+      await db.player.update({
+        where: {
+          username: player.username,
+        },
+        data: {
+          uuid: `Old-${player.username}`,
+        },
+      }).catch((err) => console.error(err));
+    }
+
+    return console.log(`Cleaned ${uuids.length} players`);
+  }
 }

@@ -35,7 +35,7 @@ export default class Town {
             this.polygon = data.polygon.map((d) => new Polygon(d.points))
         }
 
-        if (this.assistants == ["None"]) {4
+        if (this.assistants[0] == "None" && this.assistants.length == 1) {
             this.assistants = [];
         }
     }

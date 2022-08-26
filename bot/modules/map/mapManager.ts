@@ -2,6 +2,7 @@ import { ActivityType } from "discord.js";
 import { bot } from "../../..";
 import Time from "../../utils/time";
 import MapConnection from "./mapConnection";
+import MapDatabaseManager from "./mapDatabaseManager";
 import MapEventManager from "./mapEnventHandler";
 import PlayerSessionManager from "./sessions/playerSessionManager";
 
@@ -24,6 +25,9 @@ export default class MapManager {
 
       MapEventManager.playerEvents(this.currentPlayerData, newData, this.currentPlayerData.max == 0);
       this.currentPlayerData = newData;
+
+      await MapDatabaseManager.cleanPlayers()
+
     }, new Time("1 second").ms());
 
     this.townTimer = setInterval(async () => {

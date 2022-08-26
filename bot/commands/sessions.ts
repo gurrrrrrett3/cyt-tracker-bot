@@ -33,7 +33,7 @@ const Command = {
         const offset = sessionsPerPage * (page - 1);
         const pagedSessions = sessions.slice(offset, sessionsPerPage * page - 1);
         const embed = new EmbedBuilder().setTitle(`${username} | Sessions`).setDescription(
-          `${username} has ${sessions.length} Session${sessions.length > 1 ? "s" : ""}\n` +
+          `${username} has ${sessions.length} Session${sessions.length == 1 ? "s" :    ""}\n` +
             pagedSessions
               .map((s, i) => {
                 return `${i + offset + 1}: ${Util.formatDiscordTime(

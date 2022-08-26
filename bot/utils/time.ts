@@ -17,7 +17,7 @@ export type TimeUnitsLongSingular =
 export type TimeUnitsLong = `${TimeUnitsLongSingular}s`;
 export type TimeUnits = TimeUnitsShort | TimeUnitsLong | TimeUnitsLongSingular;
 
-export type TimeValue = `${number} ${TimeUnits}` | `${number}${TimeUnits} | number`;
+export type TimeValue = `${number} ${TimeUnits}` | `${number}${TimeUnits}`
 export type TimeValueArray = TimeValue | TimeValue[];
 
 export interface TimeClass {

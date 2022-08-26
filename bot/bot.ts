@@ -41,7 +41,10 @@ export default class Bot {
         limit: 10,
       })
 
-      if (!players.length) return
+      if (!players.length) return interaction.respond([{
+        value: "null",
+        name: "No players found",
+      }])
 
       interaction.respond(players.map((player) => {
         return {

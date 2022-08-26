@@ -29,6 +29,7 @@ import Util from "./utils";
         refreshButton?: boolean;
         firstLastButtons?: boolean;
         footer?: boolean;
+        extraFooterText?: string;
       }
     ) {
       if (options?.currentPage) {
@@ -115,7 +116,7 @@ import Util from "./utils";
       const embed = await this.generateEmbed(this.currentPage);
       if (this.options?.footer) {
         embed.setFooter({
-          text: `Page ${this.currentPage}/${this.options?.pageCount || 1}`,
+          text: `Page ${this.currentPage}/${this.options?.pageCount || 1}${this.options?.extraFooterText ? ` | ${this.options?.extraFooterText}` : ""}`,
         });
       }
   

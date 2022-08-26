@@ -182,20 +182,11 @@ export default class MapDatabaseManager {
   }
 
   public static async onTeleport(oldPlayer: Player, newPlayer: Player) {
+    const player = await this.getPlayer(oldPlayer.name);
     return await db.teleport
       .create({
         data: {
-          player: {
-            connectOrCreate: {
-              where: {
-                uuid: oldPlayer.uuid,
-              },
-              create: {
-                username: oldPlayer.name,
-                uuid: oldPlayer.uuid,
-              },
-            },
-          },
+          playerId: player.id,
           from: oldPlayer.getLocation(),
           to: newPlayer.getLocation(),
         },

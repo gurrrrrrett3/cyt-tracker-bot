@@ -6,15 +6,19 @@ export default class PlayerSessionManager {
   public static async onJoin(player: Player) {
     const dbPlayer = await MapDatabaseManager.getPlayer(player.name, player.uuid);
     if (!dbPlayer) return;
-    const session = await db.session.create({
-      data: {
-        playerId: dbPlayer.id,
-        loginLocation: player.getLocation(),
-      },
-      include: {
-        player: true,
-      },
-    }).catch((err) => console.error(err));
+    const session = await db.session
+      .create({
+        data: {
+          playerId: dbPlayer.id,
+          loginLocation: player.getLocation(),
+        },
+        include: {
+          player: true,
+        },
+      })
+      .catch((err) => console.error(err));
+
+      console.log(`Created session for ${player.name}, id: ${session?.id}`);
 
     return session;
   }
@@ -22,44 +26,52 @@ export default class PlayerSessionManager {
   public static async onLeave(player: Player) {
     const dbPlayer = await MapDatabaseManager.getPlayer(player.name, player.uuid);
     if (!dbPlayer) return;
-    const session = await db.session.findFirst({
-      where: {
-        playerId: dbPlayer.id,
-        isOnline: true,
-      },
-      include: {
-        player: true,
-      },
-    }).catch((err) => console.error(err));
+    const session = await db.session
+      .findFirst({
+        where: {
+          playerId: dbPlayer.id,
+          isOnline: true,
+        },
+        include: {
+          player: true,
+        },
+      })
+      .catch((err) => console.error(err));
 
     if (session) {
-      await db.session.update({
-        data: {
-          isOnline: false,
-          logoutLocation: player.getLocation(),
-        },
+      await db.session
+        .update({
+          data: {
+            isOnline: false,
+            logoutLocation: player.getLocation(),
+          },
+          where: {
+            id: session.id,
+          },
+        })
+        .catch((err) => console.error(err)).then((s) => console.log(`Updated session ${s?.id}`)) 
+    } else {
+      console.log(`Could not find linked session for ${player.name}, removing from database`);
+      await db.session.deleteMany({
         where: {
-          id: session.id,
+          playerId: dbPlayer.id,
+          isOnline: true,
         },
-      }).catch((err) => console.error(err));
+      });
     }
   }
 
   public static async cleanSessions() {
-    const sessions = await db.session.findMany({
-      where: {
-        isOnline: true,
-      },
-    }).catch((err) => console.error(err));
-
-    if (!sessions) return
-
-    for (const session of sessions) {
-      await db.session.delete({
+    const sessions = await db.session
+      .deleteMany({
         where: {
-          id: session.id,
+          isOnline: true,
         },
-      }).catch((err) => console.error(err));
-    }
+      })
+      .catch((err) => console.error(err));
+
+    if (sessions) console.log(`Cleaned ${sessions.count} sessions`);
+
+    return sessions;
   }
 }

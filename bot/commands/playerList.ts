@@ -49,7 +49,7 @@ const Command = {
           `\`${players.length}\` Player${players.length != 1 ? "s" : ""} in database\n\n\`\`\`` +
             pagedPlayers
               .map((p, i) => {
-                return `${i + offset + 1}: ${Util.formatPlayer(p.username)}`;
+                return `${i + offset + 1}: ${p.username}`;
               })
               .join("\n") + "\n```"
         );

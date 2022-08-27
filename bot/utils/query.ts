@@ -248,17 +248,3 @@ export default class Query {
     }
   }
 }
-
-db.player.findMany({
-  where: {
-    AND: {
-      Session: {
-        every: {
-          AND: {
-            
-          }
-        }
-      }
-    }
-  }
-})

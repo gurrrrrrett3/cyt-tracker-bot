@@ -4,8 +4,14 @@ import Util from "./utils";
 export default class Query {
   /*
     QUERY STRUCTURE
+    
+    -- Basic
 
-    in $TABLE where $COL 
+    in $TABLE where $COL $MATCH $VALUE
+    
+    -- multi
+
+    in $TABLE include $OBJ $MOD [where $COL $MATCH $VALUE]
 
     */
 
@@ -13,7 +19,15 @@ export default class Query {
     tables: {
       player: ["id", "username", "uuid"],
       town: ["id", "name", "nation", "pvp", "world", "x", "z"],
+      session: ["id", "playerId", "loginLocation", "logoutLocation", "startedAt", "endedAt", "isOnline"],
     },
+    nonStringValues: [
+      {
+        table: "session",
+        value: "isOnline",
+        type: "boolean",
+      },
+    ],
     matchTypes: [
       "equals",
       "contains",
@@ -49,20 +63,19 @@ export default class Query {
 
       const whereObject: {
         [key: string]: {
-          [key: string]: string;
+          [key: string]: any;
         };
       } = {};
 
       for (const v of wheres) {
         if (!v || !v.key || !v.value) continue;
         whereObject[v.key] = {
-          [v.matchType]: v.value,
+          [v.matchType]: this.fixValue(table || "", v.key, v.value),
         };
       }
 
       const lastCommand = data[data.length - 1];
       const secondLastCommand = data[data.length - 2];
-    
 
       console.log(data, lastCommand, `"${string}"`);
 
@@ -126,12 +139,15 @@ export default class Query {
         // @ts-ignore
         const res = await db[table].findMany({
           where: {
-            AND: whereObject
-          }
-        })
+            AND: whereObject,
+          },
+        });
 
         // @ts-ignore
-        const resList: string[] = res.map((v) => this.genString(string, v[secondLastCommand.value], "replace"));
+        const resList: string[] = res.map((v) =>
+         // @ts-ignore
+          this.genString(string, v[secondLastCommand.value], "replace")
+        );
 
         return Util.removeDuplicates(resList);
       }
@@ -143,55 +159,53 @@ export default class Query {
     }
   }
 
-  public static async query(string: string): Promise<string> {
+  public static async query(string: string): Promise<any[] | string> {
     const data = this.toObject(string.trim());
 
-      const table = data.find((v) => v?.command == "in")?.value;
+    const table = data.find((v) => v?.command == "in")?.value;
 
-      if (!table) return "Error, you need to specify a table using `in`";
+    if (!table) return "Error, you need to specify a table using `in`";
 
-      const wheres = data
-        .map((v, i) => {
-          if (v.command == "where") {
-            return {
-              key: v?.value,
-              matchType: data[i + 1]?.command,
-              value: data[i + 1]?.value,
-            };
-          }
-        })
-        .filter((v) => v != undefined);
-
-      const whereObject: {
-        [key: string]: {
-          [key: string]: string;
-        };
-      } = {};
-
-      for (const v of wheres) {
-        if (!v || !v.key || !v.value) continue;
-        whereObject[v.key] = {
-          [v.matchType]: v.value,
-        };
-      }
-
-      // @ts-ignore
-      const res = await db[table].findMany({
-        where: {
-          AND: whereObject
+    const wheres = data
+      .map((v, i) => {
+        if (v.command == "where") {
+          return {
+            key: v?.value,
+            matchType: data[i + 1]?.command,
+            value: data[i + 1]?.value,
+          };
         }
       })
+      .filter((v) => v != undefined);
 
-      return JSON.stringify(res, null, 2);
+    const whereObject: {
+      [key: string]: {
+        [key: string]: any;
+      };
+    } = {};
+
+    for (const v of wheres) {
+      if (!v || !v.key || !v.value) continue;
+      whereObject[v.key] = {
+        [v.matchType]: this.fixValue(table, v.key, v.value),
+      };
+    }
+
+    // @ts-ignore
+    const res = await db[table].findMany({
+      where: {
+        AND: whereObject,
+      },
+    });
+
+    return res
   }
 
   private static toObject(string: string): {
     command: string;
     value: string | undefined;
   }[] {
-    const a = string
-      .split(" ")
-      .filter((v) => v != "");
+    const a = string.split(" ").filter((v) => v != "");
 
     const out: {
       command: string;
@@ -217,4 +231,34 @@ export default class Query {
     }
     return a.join(" ");
   }
+
+  private static fixValue(table: string, key: string, value: string) {
+    const dataType = this.DATATYPES.nonStringValues.find((v) => v.table == table && v.value == key);
+    if (!dataType) return value;
+
+    switch (dataType.type) {
+      case "number":
+        return Number(value);
+      case "boolean":
+        return value == "true";
+      case "date":
+        return new Date(value);
+      default:
+        return value;
+    }
+  }
 }
+
+db.player.findMany({
+  where: {
+    AND: {
+      Session: {
+        every: {
+          AND: {
+            
+          }
+        }
+      }
+    }
+  }
+})

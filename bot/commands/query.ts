@@ -30,7 +30,7 @@ const Command = {
       async (page: number) => {
         const embed = new EmbedBuilder();
         if (Array.isArray(res)) {
-          embed.setTitle(`Page ${page + 1} of ${res.length}`);
+          embed.setTitle(`Page ${page} of ${res.length}`);
           embed.setDescription(`\`\`\`json\n${JSON.stringify(res.at(page), null, 2)}\`\`\``);
         } else {
           embed.setTitle(res);
@@ -38,7 +38,7 @@ const Command = {
         return embed;
       },
       {
-        currentPage: 0,
+        currentPage: 1,
         pageCount: Array.isArray(res) ? res.length : 1,
         firstLastButtons: true,
         extraFooterText: query,

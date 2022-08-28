@@ -3,6 +3,7 @@ import Util from "../../utils/utils";
 import Player from "./resources/player";
 import Town from "./resources/town";
 import { Player as pPlayer, Session } from "@prisma/client";
+import Trank from "./resources/trank";
 
 export default class MapDatabaseManager {
   public static async getPlayer(username: string, uuid?: string) {
@@ -183,18 +184,42 @@ export default class MapDatabaseManager {
 
   public static async onTeleport(oldPlayer: Player, newPlayer: Player) {
     const player = await this.getPlayer(oldPlayer.name);
-    return await db.teleport
+    const teleport = await db.teleport
       .create({
         data: {
-          playerId: player.id,
-          from: oldPlayer.getLocation(),
-          to: newPlayer.getLocation(),
+          player: {
+            connect: {
+              id: player.id,
+            },
+          },
+          from: {
+            create: {
+              world: oldPlayer.world,
+              x: oldPlayer.x,
+              z: oldPlayer.z,
+            },
+          },
+          to: {
+            create: {
+              world: newPlayer.world,
+              x: newPlayer.x,
+              z: newPlayer.z,
+            },
+          },
         },
       })
       .catch((err) => console.error(err));
+
+      // check teleport rank for newLocation
+
+      const trank = await Trank.get(newPlayer)
+      if (!trank) {
+        await Trank.create(newPlayer)
+      }
   }
 
   public static async cleanPlayers() {
+    let erroredOut = false;
     const players = await db.player.findMany({
       where: {
         uuid: {
@@ -204,42 +229,59 @@ export default class MapDatabaseManager {
       orderBy: {
         updatedAt: "desc",
       },
-    });
+    })
 
     // ramdomze the order of the players and grab the first 10
 
     const batch = Util.randomizeArray(players).slice(0, 10);
 
-    if (players.length === 0) return
+    if (players.length === 0) return true
 
     const uuids = await Util.getBatchUUIDs(batch.map((p) => p.username));
 
+    if (uuids.length == 0) {
+      erroredOut = true;
+    }
+
     for await (const uuid of uuids) {
-     await db.player.update({
-        where: {
-          username: uuid.name,
-        },
-        data: {
-          uuid: uuid.id,
-        },
-      }).catch((err) => console.error(err));
+      await db.player
+        .update({
+          where: {
+            username: uuid.name,
+          },
+          data: {
+            uuid: uuid.id,
+          },
+        })
+        .catch((err) => {
+          console.error(err);
+          erroredOut = true;
+        });
 
       // remove this player from the batch
-      batch.splice(batch.findIndex((p) => p.username === uuid.name), 1);
+      batch.splice(
+        batch.findIndex((p) => p.username === uuid.name),
+        1
+      );
     }
 
     // update the uuid of the remaining players
     for await (const player of batch) {
-      await db.player.update({
-        where: {
-          username: player.username,
-        },
-        data: {
-          uuid: `Old-${player.username}`,
-        },
-      }).catch((err) => console.error(err));
+      await db.player
+        .update({
+          where: {
+            username: player.username,
+          },
+          data: {
+            uuid: `Old-${player.username}`,
+          },
+        })
+        .catch((err) => {
+          console.error(err);
+          erroredOut = true;
+        });
     }
 
-    return console.log(`Cleaned ${uuids.length} players`);
+    return erroredOut;
   }
 }

@@ -20,9 +20,9 @@ class Player {
   );
 
   public static fromMapPlayer(player: MapPlayer): Player;
-
   public isAfk(): boolean;
   public getLocation(): DatabaseLocation;
+  public getWorldLocation(): WorldLocation;
 }
 
 interface MapPlayersReturn {

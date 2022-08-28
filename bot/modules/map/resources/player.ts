@@ -31,4 +31,13 @@ export default class Player {
     public getLocation(): DatabaseLocation {
         return `${this.world}:${this.x}:${this.z}`;
     }
+
+    public getWorldLocation(): WorldLocation {
+        return {
+            world: this.world,
+            x: this.x,
+            z: this.z,
+        }
+    }
+
 }

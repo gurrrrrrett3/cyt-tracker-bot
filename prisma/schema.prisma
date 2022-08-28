@@ -80,13 +80,40 @@ model TownCoordinates {
   townId String?
 }
 
+model TeleportCoordinates {
+  id String @id @default(cuid())
+
+  world String
+  x     Int
+  z     Int
+
+  fromTeleport Teleport?  @relation(name: "from", references: [id], fields: [fromTeleportId])
+  fromTeleportId String? @unique
+  
+  toTeleport Teleport?  @relation(name: "to", references: [id], fields: [toTeleportId])
+  toTeleportId String? @unique
+}
+
 model Teleport {
   id       String @id @default(cuid())
   player   Player @relation(fields: [playerId], references: [id])
   playerId String
 
-  from  String @default("world:0:0")
-  to    String @default("world:0:0")
+  from TeleportCoordinates? @relation(name: "from")
+  to  TeleportCoordinates? @relation(name: "to")
   
   time DateTime @default(now())
+}
+
+model Trank {
+  id String @id @default(cuid())
+  world String
+  x     Int
+  z     Int
+  name String @unique
+  description String
+  tags String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  updatedBy String
 }

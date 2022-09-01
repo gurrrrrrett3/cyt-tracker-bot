@@ -47,7 +47,7 @@ const Command = {
       });
     }
 
-    const lastAsession = playerData.Session[0];
+    const lastSession = playerData.Session[0];
 
     const embed = new EmbedBuilder()
       .setTitle(playerData.username)
@@ -61,10 +61,10 @@ const Command = {
             playerData.createdAt,
             "longDateTime"
           )} (${Util.formatDiscordTime(playerData.createdAt, "relative")})`,
-          lastAsession ? `**Last seen:** ${Util.formatDiscordTime(
+          lastSession ? `**Last seen:** ${Util.formatDiscordTime(
             playerData.updatedAt,
             "longDateTime"
-          )} (${Util.formatDiscordTime(lastAsession?.startedAt, "relative")})` : "Sessions fouind",
+          )} (${Util.formatDiscordTime(lastSession?.startedAt, "relative")})` : "No sessions foui nd",
           ``,
           `**Total sessions:** ${playerData.Session.length ?? 0}`,
           `**ID:** ${playerData.id}`,

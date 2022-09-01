@@ -10,7 +10,7 @@ import Util from "../utils/utils";
 const Command = {
   enabled: true,
   builder: new SlashCommandBuilder()
-    .setName("name")
+    .setName("player")
     .setDescription("Get data for a player")
     .addStringOption(
       new SlashCommandStringOption()

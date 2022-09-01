@@ -25,19 +25,19 @@ const Command = {
   handler: async (interaction: ChatInputCommandInteraction) => {
     const username = interaction.options.getString("player", true);
     const player = await MapDatabaseManager.getPlayer(username);
-    const sessions = player.Session.reverse();
+    const sessions = player.Session
     const sessionsPerPage = 10;
 
     new PagedEmbed(
       interaction,
       async (page) => {
         const offset = sessionsPerPage * page;
-        const pagedSessions = sessions.slice(offset, sessionsPerPage * page);
+        const pagedSessions = sessions.slice(offset, sessionsPerPage * page + 1);
         const embed = new EmbedBuilder().setTitle(`${username} | Sessions`).setDescription(
           `${username} has ${sessions.length} Session${sessions.length == 1 ? "" : "s"}\n` +
             pagedSessions
               .map((s, i) => {
-                return `${i + offset}: ${Util.formatDiscordTime(
+                return `${i + offset + 1}: ${Util.formatDiscordTime(
                   s.startedAt,
                   "shortDateTime"
                 )} - ${s.isOnline ? "**Currently Online**" : Util.formatDiscordTime(s.endedAt, "shortDateTime")} | ${new Time((s.isOnline ? Date.now() : Number(s.endedAt)) - Number(s.startedAt)).toString(true)}`;

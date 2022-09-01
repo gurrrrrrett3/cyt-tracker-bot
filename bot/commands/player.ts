@@ -53,7 +53,6 @@ const Command = {
       .setTitle(playerData.username)
       .setDescription(
         [
-          `**Id:** ${playerData.id}`,
           `**Resident of:** ${playerData.residentOf?.name ?? "None"}`,
           `**Assistant of:** ${playerData.assistantOf?.name ?? "None"}`,
           `**Owner of:** ${playerData.ownerOf?.name ?? "None"}`,
@@ -62,12 +61,12 @@ const Command = {
             playerData.createdAt,
             "longDateTime"
           )} (${Util.formatDiscordTime(playerData.createdAt, "relative")})`,
-          `**Last seen:** ${Util.formatDiscordTime(
+          lastAsession ? `**Last seen:** ${Util.formatDiscordTime(
             playerData.updatedAt,
             "longDateTime"
-          )} (${Util.formatDiscordTime(lastAsession.startedAt, "relative")})`,
+          )} (${Util.formatDiscordTime(lastAsession?.startedAt, "relative")})` : "Sessions fouind",
           ``,
-          `**Total sessions:** ${playerData.Session.length}`,
+          `**Total sessions:** ${playerData.Session.length ?? 0}`,
           `**ID:** ${playerData.id}`,
         ].join("\n")
       );

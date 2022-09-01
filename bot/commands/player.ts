@@ -55,7 +55,7 @@ const Command = {
         [
           `**Id:** ${playerData.id}`,
           `**Resident of:** ${playerData.residentOf?.name ?? "None"}`,
-          `*Assistant of:** ${playerData.assistantOf?.name ?? "None"}`,
+          `**Assistant of:** ${playerData.assistantOf?.name ?? "None"}`,
           `**Owner of:** ${playerData.ownerOf?.name ?? "None"}`,
           ``,
           `**First seen:** ${Util.formatDiscordTime(

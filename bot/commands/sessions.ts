@@ -25,7 +25,7 @@ const Command = {
   handler: async (interaction: ChatInputCommandInteraction) => {
     const username = interaction.options.getString("player", true);
     const player = await MapDatabaseManager.getPlayer(username);
-    const sessions = player.Session
+    const sessions = player.Session.reverse()
     const sessionsPerPage = 10;
 
     new PagedEmbed(

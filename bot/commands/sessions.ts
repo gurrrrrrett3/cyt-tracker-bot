@@ -32,7 +32,7 @@ const Command = {
       interaction,
       async (page) => {
         const offset = sessionsPerPage * page;
-        const pagedSessions = sessions.slice(offset, sessionsPerPage * page + 1);
+        const pagedSessions = sessions.slice(offset, sessionsPerPage * (page + 1));
         const embed = new EmbedBuilder().setTitle(`${username} | Sessions`).setDescription(
           `${username} has ${sessions.length} Session${sessions.length == 1 ? "" : "s"}\n` +
             pagedSessions

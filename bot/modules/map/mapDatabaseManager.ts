@@ -189,7 +189,7 @@ export default class MapDatabaseManager {
         data: {
           player: {
             connect: {
-              id: player.id,
+              id: player?.id,
             },
           },
           from: {

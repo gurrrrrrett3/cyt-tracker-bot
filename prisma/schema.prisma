@@ -83,6 +83,7 @@ model TownCoordinates {
 model TeleportCoordinates {
   id String @id @default(cuid())
 
+
   world String
   x     Int
   z     Int

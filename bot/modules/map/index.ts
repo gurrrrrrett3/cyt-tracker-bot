@@ -10,16 +10,16 @@ import MapManager from "./mapManager";
 export default class MapModule extends BaseModule implements Module {
   name = "Map";
   description = "Manages connection to the map";
+  mm = new MapManager()
 
   // declare other public variables here
 
   constructor(bot: Bot) {
     super(bot);
-    const mm = new MapManager()
 
     let i = 0
     setInterval(async () => {
-      if (mm.isSaving) {
+      if (this.mm.isSaving) {
         bot.client.user?.setActivity({
           type: ActivityType.Streaming,
           name: "data | SAVING | commands may be unresponsive"
@@ -30,7 +30,7 @@ export default class MapModule extends BaseModule implements Module {
         case 0:
           bot.client.user?.setActivity({
             type: ActivityType.Playing,
-            name: `on CYT | ${mm.currentPlayerData.players.length} online`
+            name: `on CYT | ${this.mm.currentPlayerData.players.length} online`
           })
           break
           case 1: 
@@ -66,5 +66,9 @@ export default class MapModule extends BaseModule implements Module {
   async init(bot: Bot) {
     // init code here, this is called when the module is loaded
 
+  }
+
+  public static getMapModule(bot: Bot): MapModule {
+    return bot.moduleLoader.getModule("Map") as MapModule;
   }
 }

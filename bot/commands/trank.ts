@@ -58,7 +58,7 @@ const Command = {
       const embed = new EmbedBuilder()
         .setTitle(t.data.name)
         .setDescription(
-          `**Location:** ${t.data.world}: ${t.data.x}, ${t.data.z}\n${t.data.description}\n**Uses:** ${t.teleports.length}\n**Unique Uses**${playerIds.length}\n**Uses This Week:** ${usesThisWeek}`
+          `**Location:** ${t.data.world}: ${t.data.x}, ${t.data.z}\n${t.data.description}\n\n**Uses:** ${t.teleports.length}\n**Unique Uses: **${playerIds.length}\n**Uses This Week:** ${usesThisWeek}`
         );
 
       await interaction.reply({ embeds: [embed] });

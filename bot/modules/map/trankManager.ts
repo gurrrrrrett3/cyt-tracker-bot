@@ -48,7 +48,7 @@ export default class TrankManager {
     };
   }
 
-    public static async updateTrank(name: string, data: { name?: string; description?: string; tags?: string }) {
+    public static async updateTrank(name: string, editor: string, data: { name?: string; description?: string; tags?: string }) {
         const trank = await this.getTrankByName(name);
         if (!trank) return null;
 
@@ -60,6 +60,7 @@ export default class TrankManager {
                 name: data.name ?? trank.name,
                 description: data.description ?? trank.description,
                 tags: data.tags ?? trank.tags,
+                updatedBy: editor
             },
         });
     }

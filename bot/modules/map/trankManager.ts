@@ -47,4 +47,20 @@ export default class TrankManager {
       teleports,
     };
   }
+
+    public static async updateTrank(name: string, data: { name?: string; description?: string; tags?: string }) {
+        const trank = await this.getTrankByName(name);
+        if (!trank) return null;
+
+        await db.trank.update({
+            where: {
+                name: name,
+            },
+            data: {
+                name: data.name ?? trank.name,
+                description: data.description ?? trank.description,
+                tags: data.tags ?? trank.tags,
+            },
+        });
+    }
 }

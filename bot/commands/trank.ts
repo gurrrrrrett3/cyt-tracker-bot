@@ -47,10 +47,18 @@ const Command = {
         return;
       }
 
+      // remove duplicate teleports by player name 
+      const playerIds: string[] = []
+      t.teleports.forEach((tele) => {
+        playerIds.includes(tele.player.id) ? null : playerIds.push(tele.player.id)
+      })
+
+      const usesThisWeek = t.teleports.filter((tele) => Date.now() - tele.time.getTime() < 604800000).length;
+
       const embed = new EmbedBuilder()
         .setTitle(t.data.name)
         .setDescription(
-          `${t.data.world}: ${t.data.x}, ${t.data.z}\n\n${t.data.description}\n\n**Teleports:** ${t.teleports.length}`
+          `**Location:** ${t.data.world}: ${t.data.x}, ${t.data.z}\n${t.data.description}\n**Uses:** ${t.teleports.length}\n**Unique Uses**${playerIds.length}\n**Uses This Week:** ${usesThisWeek}`
         );
 
       await interaction.reply({ embeds: [embed] });

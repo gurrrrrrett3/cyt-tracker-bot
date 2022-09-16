@@ -18,7 +18,7 @@ export default class WebsocketModule extends BaseModule implements Module {
 
   constructor(bot: Bot) {
     super(bot);
-        this.ws = new ws("ws://localhost:3001")
+        this.ws = new ws("ws://95.216.205.34:3001/")
         this.ws.on("open", () => {
           this.ws.send("botserver:ready");
         })  

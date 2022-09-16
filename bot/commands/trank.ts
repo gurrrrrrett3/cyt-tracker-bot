@@ -61,7 +61,7 @@ const Command = {
             const description = interaction.fields.getTextInputValue("description");
             const tags = interaction.fields.getTextInputValue("tags");
 
-            await TrankManager.updateTrank(trank, {
+            await TrankManager.updateTrank(trank, interaction.user.username, {
                 name,
                 description,
                 tags

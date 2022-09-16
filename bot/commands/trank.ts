@@ -19,6 +19,9 @@ const Command = {
         .setName("edit")
         .setDescription("Edit a Teleport Ranking")
 
+        .addStringOption(
+            new SlashCommandStringOption().setName("trank").setDescription("Name of the rank").setRequired(true)
+          )
     )
     ,
   handler: async (interaction: ChatInputCommandInteraction) => {
@@ -55,6 +58,8 @@ const Command = {
                 new ActionRowBuilder<TextInputBuilder>().addComponents(new TextInputBuilder().setCustomId("description").setPlaceholder("Description").setMinLength(1).setMaxLength(1000).setValue(t.data.description ?? undefined)),
                 new ActionRowBuilder<TextInputBuilder>().addComponents(new TextInputBuilder().setCustomId("tags").setPlaceholder("pw,shop,redstone").setMinLength(1).setMaxLength(20).setValue(t.data.tags.split(",").join(", ")))
             ])
+
+            interaction.showModal(modal);
 
         bot.modalManager.registerModal(id, async (interaction: ModalSubmitInteraction) => {
             const name = interaction.fields.getTextInputValue("name");

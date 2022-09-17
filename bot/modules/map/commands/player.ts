@@ -1,25 +1,22 @@
 import {
-  ChatInputCommandInteraction,
   EmbedBuilder,
-  SlashCommandBuilder,
-  SlashCommandStringOption,
 } from "discord.js";
-import { db } from "../..";
-import Util from "../utils/utils";
+import { db } from "../../../..";
+import Util from "../../../utils/utils";
+import SlashCommandBuilder from "../../../loaders/objects/customSlashCommandBuilder";
 
-const Command = {
-  enabled: true,
-  builder: new SlashCommandBuilder()
+
+const Command =  new SlashCommandBuilder()
     .setName("player")
     .setDescription("Get data for a player")
     .addStringOption(
-      new SlashCommandStringOption()
-        .setAutocomplete(true)
+      o => o
         .setName("player")
         .setDescription("The player to get data for")
         .setRequired(true)
-    ),
-  handler: async (interaction: ChatInputCommandInteraction) => {
+    )
+    .setFunction(async (interaction) => {
+    
     const player = interaction.options.getString("player", true);
 
     const playerData = await db.player.findFirst({
@@ -41,10 +38,11 @@ const Command = {
     });
 
     if (!playerData) {
-      return interaction.reply({
+      interaction.reply({
         content: "No player found",
         ephemeral: true,
       });
+      return
     }
 
     const lastSession = playerData.Session[0];
@@ -74,7 +72,6 @@ const Command = {
     interaction.reply({
       embeds: [embed],
     });
-  },
-};
+  });
 
 export default Command;

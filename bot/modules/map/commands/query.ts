@@ -1,26 +1,21 @@
 import {
-  ChatInputCommandInteraction,
-  Embed,
   EmbedBuilder,
-  SlashCommandBuilder,
-  SlashCommandStringOption,
 } from "discord.js";
-import PagedEmbed from "../utils/pagedEmbed";
-import Query from "../utils/query";
+import PagedEmbed from "../../../utils/pagedEmbed";
+import Query from "../../../utils/query";
+import SlashCommandBuilder from "../../../loaders/objects/customSlashCommandBuilder";
 
-const Command = {
-  enabled: true,
-  builder: new SlashCommandBuilder()
+const Command = new SlashCommandBuilder()
     .setName("query")
+    .setEnabled(false)
     .setDescription("Use an advanced query to grab data")
     .addStringOption(
-      new SlashCommandStringOption()
+      o => o
         .setName("query")
         .setDescription("The query to send to the the databse, in cytq format")
-        .setAutocomplete(true)
         .setRequired(true)
-    ),
-  handler: async (interaction: ChatInputCommandInteraction) => {
+    )
+    .setFunction(async (interaction) => {
     const query = interaction.options.getString("query", true);
 
     const res = await Query.query(query);
@@ -45,7 +40,7 @@ const Command = {
         footer: true
       }
     );
-  },
-};
+  }
+    )
 
 export default Command;

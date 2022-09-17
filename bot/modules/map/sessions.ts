@@ -4,11 +4,10 @@ import {
   SlashCommandBuilder,
   SlashCommandStringOption,
 } from "discord.js";
-import { bot } from "../..";
-import MapDatabaseManager from "../modules/map/mapDatabaseManager";
-import PagedEmbed from "../utils/pagedEmbed";
-import Time from "../utils/time";
-import Util from "../utils/utils";
+import MapDatabaseManager from "./mapDatabaseManager";
+import PagedEmbed from "../../utils/pagedEmbed";
+import Time from "../../utils/time";
+import Util from "../../utils/utils";
 
 const Command = {
   enabled: true,

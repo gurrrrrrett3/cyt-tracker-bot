@@ -3,60 +3,44 @@ import {
   Routes,
   REST,
   Collection,
-  ChatInputCommandInteraction,
-  SlashCommandBuilder,
   Client,
-  MessageContextMenuCommandInteraction,
-  UserContextMenuCommandInteraction,
 } from "discord.js";
-import fs from "fs";
-import path from "path";
+import { CustomCommandBuilder } from "./loaderTypes";
+import CommandBuilder from "./objects/customSlashCommandBuilder";
 
 interface Command {
-  default: {
-    enabled: boolean;
-    builder: SlashCommandBuilder;
-    handler: (
-      interaction:
-        | ChatInputCommandInteraction
-        | MessageContextMenuCommandInteraction
-        | UserContextMenuCommandInteraction
-    ) => void;
-  };
+  default: CommandBuilder;
 }
 
 export default class CommandLoader {
   public client: Client;
-  public commands: Collection<string, Command> = new Collection();
+  public commands: Collection<string, CustomCommandBuilder> = new Collection();
 
   constructor(client: Client) {
     this.client = client;
+  }
 
-    this.client.once("ready", async () => {
-      const applicationId = this.client.application?.id ?? this.client.user?.id ?? "unknown";
+  async load(commands: CustomCommandBuilder[]) {
+    const applicationId = this.client.application?.id ?? this.client.user?.id ?? "unknown";
 
-      //Collect list of command files
-      let commandsToDeploy: RESTPostAPIApplicationCommandsJSONBody[] = [];
-      const commandFiles = fs
-        .readdirSync(path.resolve("./dist/bot/commands"))
-        .filter((file) => file.endsWith(".js"));
+    //Collect list of command files
+    let commandsToDeploy: RESTPostAPIApplicationCommandsJSONBody[] = [];
 
-      console.log(`Deploying ${commandFiles.length} commands`);
+    console.log(`Deploying ${commands.length} commands`);
 
-      //Import off of the commands as modules
-      for (const file of commandFiles) {
-        const command: Command = require(path.resolve(`./dist/bot/commands/${file}`));
-        this.commands.set(command.default.builder.name, command);
-        commandsToDeploy.push(command.default.builder.toJSON());
-      }
+    //Import off of the commands as modules
+    for (const command of commands) {
+      this.commands.set(command.getName(), command);
+      commandsToDeploy.push(command.toJSON());
+    }
 
-      const rest = new REST({ version: "10" }).setToken(this.client.token as string);
+    const rest = new REST({ version: "10" }).setToken(this.client.token as string ?? process.env.TOKEN as string);
 
-      this.client.application?.commands.set([]);
+    this.client.application?.commands.set([]);
 
-      //Push to Discord
-      if (process.env.MODE == "guild") {
-        rest
+    //Push to Discord
+    if (process.env.MODE == "guild") {
+      rest
         .put(Routes.applicationGuildCommands(applicationId, process.env.GUILD_ID as string), {
           body: commandsToDeploy,
         })
@@ -66,8 +50,8 @@ export default class CommandLoader {
         .catch((err) => {
           console.error(err);
         });
-      } else {
-        rest
+    } else {
+      rest
         .put(Routes.applicationCommands(applicationId), {
           body: commandsToDeploy,
         })
@@ -77,16 +61,34 @@ export default class CommandLoader {
         .catch((err) => {
           console.error(err);
         });
-      }
-    });
+    }
 
     //Handle running commands, and direct them to the correct handler function
     this.client.on("interactionCreate", (interaction) => {
+      // handle autocomplete
+      if (interaction.isAutocomplete()) {
+        const command = this.commands.get(interaction.commandName);
+        if (command && command.isChatInputCommandHandler()) command.handleAutocomplete(interaction);
+      }
+
       if (!interaction.isCommand()) return; // Ignore non-command interactions
       if (interaction.replied) return; // Ignore interactions that have already been replied to
 
       const command = this.commands.get(interaction.commandName);
-      command?.default.handler(interaction);
+      if (!command) return;
+
+      if (interaction.isChatInputCommand() && command.isChatInputCommandHandler())
+        return command.run(interaction);
+      if (!interaction.isChatInputCommand() && !command.isChatInputCommandHandler())
+        return command.run(interaction);
     });
+  }
+
+  public unload(commands: CustomCommandBuilder[]) {
+    for (const command of commands) {
+      this.commands.delete(command.getName());
+    }
+
+    this.load(Array.from(this.commands.values()));
   }
 }

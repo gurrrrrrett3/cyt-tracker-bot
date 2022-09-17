@@ -4,10 +4,10 @@ import {
   SlashCommandBuilder,
   SlashCommandStringOption,
 } from "discord.js";
-import { db } from "../..";
-import MapDatabaseManager from "../modules/map/mapDatabaseManager";
-import PagedEmbed from "../utils/pagedEmbed";
-import Util from "../utils/utils";
+import { db } from "../../..";
+import MapDatabaseManager from "./mapDatabaseManager";
+import PagedEmbed from "../../utils/pagedEmbed";
+import Util from "../../utils/utils";
 
 const Command = {
   enabled: true,

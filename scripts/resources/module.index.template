@@ -1,0 +1,19 @@
+import { bot } from "../../..";
+import BaseModule from "../../loaders/base/baseModule";
+import Module from "../../loaders/base/module";
+
+export default class <nameUppercase>Module extends Module {
+name = "<name>";
+description = "<desc>";
+
+    get<nameUppercase>Module(): <nameUppercase>Module {
+        return bot.moduleLoader.getModule("<name>") as <nameUppercase>Module;
+    }
+
+    override async onUnload(): Promise<void> {
+    // handle unloading resources and stopping timers
+
+    console.log("Unloaded <nameUppercase> module!");
+  }
+
+}

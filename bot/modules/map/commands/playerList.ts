@@ -1,35 +1,29 @@
-import {
-  ChatInputCommandInteraction,
-  EmbedBuilder,
-  SlashCommandBuilder,
-  SlashCommandStringOption,
-} from "discord.js";
-import { db } from "../..";
-import PagedEmbed from "../utils/pagedEmbed";
-import Util from "../utils/utils";
+import { EmbedBuilder } from "discord.js";
+import { db } from "../../../..";
+import PagedEmbed from "../../../utils/pagedEmbed";
+import SlashCommandBuilder from "../../../loaders/objects/customSlashCommandBuilder";
 
-const Command = {
-  enabled: true,
-  builder: new SlashCommandBuilder()
-    .setName("playerlist")
-    .setDescription("Get the entire databse of players in the bot")
-    .addStringOption(
-      new SlashCommandStringOption().setName("sortmode").setDescription("The sort mode to use").addChoices(
-        {
-          name: "Name",
-          value: "username",
-        },
-        {
-          name: "updatedAt",
-          value: "updatedAt",
-        },
-        {
-          name: "createdAt",
-          value: "createdAt",
-        }
-      )
-    ),
-  handler: async (interaction: ChatInputCommandInteraction) => {
+const Command = new SlashCommandBuilder()
+  .setName("playerlist")
+  .setDescription("Get the entire databse of players in the bot")
+  .addStringOption((o) =>
+    o.setName("sortmode").setDescription("The sort mode to use").addChoices(
+      {
+        name: "Name",
+        value: "username",
+      },
+      {
+        name: "updatedAt",
+        value: "updatedAt",
+      },
+      {
+        name: "createdAt",
+        value: "createdAt",
+      }
+    )
+  )
+
+  .setFunction(async (interaction) => {
     const options = interaction.options;
     const sortmode = options.getString("sortmode", false) || "username";
 
@@ -51,7 +45,8 @@ const Command = {
               .map((p, i) => {
                 return `${i + offset + 1}: ${p.username}`;
               })
-              .join("\n") + "\n```"
+              .join("\n") +
+            "\n```"
         );
 
         return embed;
@@ -64,7 +59,6 @@ const Command = {
         refreshButton: false,
       }
     );
-  },
-};
+  });
 
 export default Command;

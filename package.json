@@ -21,6 +21,7 @@
   "dependencies": {
     "@prisma/client": "^4.2.1",
     "canvas": "^2.10.1",
+    "chalk": "^4.1.2",
     "discord.js": "^14.2.0",
     "dotenv": "^16.0.1",
     "fuzzyset": "^1.0.7",

@@ -4,18 +4,15 @@ import CommandLoader from "./loaders/commandLoader";
 import ButtonManager from "./loaders/managers/buttonManager";
 import SelectMenuManager from "./loaders/managers/selectMenuManager";
 import ModalManager from "./loaders/managers/modalManager";
-import MapDatabaseManager from "./modules/map/mapDatabaseManager";
-import Query from "./utils/query";
-import Util from "./utils/utils";
 
 export default class Bot {
 
-    public moduleLoader: ModuleLoader
-    public commandLoader: CommandLoader
+    commandLoader: CommandLoader
+    moduleLoader: ModuleLoader
 
-    public buttonManager: ButtonManager
-    public selectMenuManager: SelectMenuManager
-    public modalManager: ModalManager
+    buttonManager: ButtonManager
+    selectMenuManager: SelectMenuManager
+    modalManager: ModalManager
   
   constructor(public client: Client) {
     this.client
@@ -23,58 +20,12 @@ export default class Bot {
         console.info(`Logged in as ${this.client.user?.tag}`);
 
       })
-    this.moduleLoader = new ModuleLoader(this);
+      
     this.commandLoader = new CommandLoader(this.client);
+    this.moduleLoader = new ModuleLoader(this);
     
     this.buttonManager = new ButtonManager(this.client);
     this.selectMenuManager = new SelectMenuManager(this.client);
     this.modalManager = new ModalManager(this.client);
-
-    // autocomplete handler
-
-    this.client.on("interactionCreate", async (interaction) => {
-      if (!interaction.isAutocomplete()) return
-
-      const playerAutocomplete = interaction.options.getString("player")
-      const queryAutoComplete = interaction.options.getString("query")
-
-      if (!playerAutocomplete && !queryAutoComplete) return
-
-
-      if (playerAutocomplete) {
-      const players = await MapDatabaseManager.searchPlayer(playerAutocomplete, {
-        limit: 10,
-      })
-
-      if (!players.length) return interaction.respond([{
-        value: "null",
-        name: "No players found",
-      }])
-
-      interaction.respond(players.map((player) => {
-        return {
-          value: player,
-          name: player,
-        }
-      }))
-    }
-
-    if (queryAutoComplete) {
-      const res = await Query.suggest(queryAutoComplete) as any[]
-      interaction.respond(res.map((v: string) => {
-        const sv = v.slice(0, 100)
-        console.log(sv)
-        return {
-          value: sv,
-          name: sv
-        }
-      }).splice(0, 25))
-    }
-
-    })
   }
-
-  
-
-
 }

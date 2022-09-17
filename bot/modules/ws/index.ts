@@ -1,15 +1,12 @@
 import Bot from "../../bot";
-import BaseModule from "../../loaders/base/baseModule";
-import { Module } from "../../loaders/loaderTypes";
-
+import Module from "../../loaders/base/module";
 import ws from "ws";
 import MapModule from "../map";
-import { bot, db } from "../../..";
 import MapConnection from "../map/mapConnection";
 import MapCanvas from "../map/mapCanvas";
 
-export default class WebsocketModule extends BaseModule implements Module {
-  name = "Websocket";
+export default class WsModule extends Module {
+  name = "ws";
   description = "";
 
   // declare other public variables here
@@ -28,11 +25,7 @@ export default class WebsocketModule extends BaseModule implements Module {
     
   }
 
-  async init(bot: Bot) {
-    // init code here, this is called when the module is loaded
-  }
-
-  public async dataHandler(data: string) {
+ async dataHandler(data: string) {
     const id = data.split(":")[0];
     const d = JSON.parse(data.split(":").slice(1).join(":")) as {
       type: string;
@@ -43,19 +36,19 @@ export default class WebsocketModule extends BaseModule implements Module {
 
     switch (d.type) {
       case "onlineList":
-        this.sendData(id, MapModule.getMapModule(bot).mm.currentPlayerData);
+        this.sendData(id, MapModule.getMapModule().mm.currentPlayerData);
         break;
       case "townList":
-        this.sendData(id, await MapModule.getMapModule(bot).mm.getTownList());
+        this.sendData(id, await MapModule.getMapModule().mm.getTownList());
         break;
         case "playerList":
-        this.sendData(id, await MapModule.getMapModule(bot).mm.getPlayerList());
+        this.sendData(id, await MapModule.getMapModule().mm.getPlayerList());
         break;
         case "teleportList":
-        this.sendData(id, await MapModule.getMapModule(bot).mm.getTeleportList());
+        this.sendData(id, await MapModule.getMapModule().mm.getTeleportList());
         break;
         case "sessionList":
-        this.sendData(id, await MapModule.getMapModule(bot).mm.getSessionList());
+        this.sendData(id, await MapModule.getMapModule().mm.getSessionList());
         break;
         case "mapTile":
         this.sendData(id, await MapConnection.getMapTileAtCoordsAsDataURI(d.world, d.x, d.y, d.zoom));
@@ -67,19 +60,19 @@ export default class WebsocketModule extends BaseModule implements Module {
         this.sendData(id, await MapCanvas.drawPlayerMapThumbnail(d.world, d.x, d.y, d.zoom, d.yaw));
         break
         case "ticker":
-        this.sendData(id, await MapModule.getMapModule(bot).mm.getTicker());
+        this.sendData(id, await MapModule.getMapModule().mm.getTicker());
       default:
         this.sendData(id, { error: "Invalid type" });
         break;
     }
   }
 
-  public sendData(id: string, data: Object | Array<any>) {
+   sendData(id: string, data: Object | Array<any>) {
     console.log(`[WS] Sending data of length ${JSON.stringify(data).length} to ${id}`);
     this.ws.send(`botserver:${id}:${JSON.stringify(data)}`);
   }
 
-  public static getWebsocketModule(bot: Bot): WebsocketModule {
-    return bot.moduleLoader.getModule("Websocket") as WebsocketModule;
+   static getWebsocketModule(bot: Bot): WsModule {
+    return bot.moduleLoader.getModule("ws") as unknown as WsModule;
   }
 }

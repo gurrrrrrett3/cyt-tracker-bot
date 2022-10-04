@@ -96,7 +96,15 @@ export default class CustomSlashCommandSubcommandGroupBuilder {
   }
 
   async handleAutocomplete(interaction: AutocompleteInteraction): Promise<void> {
-    const subcommand = interaction.options.data.find(
+
+    const thisSubCommandGroup = interaction.options.data
+    .find((x) => x.type === ApplicationCommandOptionType.SubcommandGroup && x.name === this._builder.name)
+
+    if (!thisSubCommandGroup) {
+      return
+    }
+
+    const subcommand = thisSubCommandGroup.options?.find(
       (opt) => opt.type == ApplicationCommandOptionType.Subcommand
     )
       ? interaction.options.getSubcommand()
@@ -110,6 +118,7 @@ export default class CustomSlashCommandSubcommandGroupBuilder {
       return;
     }
 
+    
     subCommandBuilder.handleAutocomplete(interaction);
   }
 }

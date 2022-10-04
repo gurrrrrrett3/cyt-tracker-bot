@@ -30,10 +30,16 @@ export default class TrankManager {
   public static async getTrankByName(name: string) {
     const trank = await db.trank.findUnique({
       where: {
-        name: name,
+        name: name
       },
     });
     return trank;
+  }
+
+  public static async searchTranks(name: string) {
+    const tranks = await db.trank.findMany();
+    const results = tranks.filter((trank) => trank.name.toLowerCase().includes(name.toLowerCase()));
+    return results
   }
 
   public static async getTrankData(name: string) {
@@ -63,5 +69,22 @@ export default class TrankManager {
                 updatedBy: editor
             },
         });
+    }
+
+    public static async getTrankByCoords(world: string, x: number, z: number) {
+        const trank = await db.trank.findFirst({
+            where: {
+                world: world,
+                x: {
+                    gte: x - 5,
+                    lte: x + 5,
+                },
+                z: {
+                    gte: z - 5,
+                    lte: z + 5,
+                }
+            },
+        });
+        return trank   
     }
 }

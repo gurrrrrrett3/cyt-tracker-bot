@@ -153,7 +153,7 @@ export default class MapDatabaseManager {
             data: {
               username: user.u,
               uuid: user.i,
-              residentTownid: dbTown.id,
+              residentTownId: dbTown.id,
               assistantTownId: town.assistants.includes(user.u) ? dbTown.id : undefined,
             },
           })
@@ -166,7 +166,7 @@ export default class MapDatabaseManager {
         .updateMany({
           where: {
             AND: {
-              residentTownid: dbTown.id,
+              residentTownId: dbTown.id,
               username: {
                 in: town.assistants,
               },

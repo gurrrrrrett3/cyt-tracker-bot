@@ -12,6 +12,7 @@ import {
   SlashCommandSubcommandBuilder,
   SlashCommandUserOption,
 } from "discord.js";
+import CommandBuilder from "./customSlashCommandBuilder";
 import CustomSlashCommandIntegerOption from "./customSlashCommandIntegerOption";
 import CustomSlashCommandNumberOption from "./customSlashCommandNumberOption";
 import CustomSlashCommandStringOption from "./customSlashCommandStringOption";
@@ -186,12 +187,16 @@ export default class CustomSlashCommandSubcommandBuilder {
       if (selectedOption && selectedOption.autocompleteCallback) {
         if (selectedOption.takesStringTypeOption()) {
           await interaction.respond(
+            CommandBuilder.cleanAutoCompleteResponse(
             await selectedOption.autocompleteCallback(interaction, interaction.options.getFocused())
+            )
           );
           return;
         } else {
           await interaction.respond(
+            CommandBuilder.cleanAutoCompleteResponse(
             await selectedOption.autocompleteCallback(interaction, Number(interaction.options.getFocused()))
+            )
           );
           return;
         }

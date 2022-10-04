@@ -243,19 +243,22 @@ export default class CommandBuilder {
 
   async handleAutocomplete(interaction: AutocompleteInteraction): Promise<void> {
     try {
-      const subcommand = interaction.options.data.find(
-        (opt) => opt.type == ApplicationCommandOptionType.Subcommand
+      const subcommandGroupIndex = interaction.options.data.findIndex(
+        (opt) => opt.type == ApplicationCommandOptionType.SubcommandGroup
       )
-        ? interaction.options.getSubcommand()
-        : null;
-      const subcommandGroup = interaction.options.data.find(
+
+       const subcommandGroup = interaction.options.data.find(
         (opt) => opt.type == ApplicationCommandOptionType.SubcommandGroup
       )
         ? interaction.options.getSubcommandGroup()
         : null;
 
-      console.log(subcommandGroup, subcommand);
-
+      const subcommand = interaction.options.data[subcommandGroupIndex].options?.find(
+        (opt) => opt.type == ApplicationCommandOptionType.Subcommand
+      )
+        ? interaction.options.getSubcommand()
+        : null;
+        
       if (subcommandGroup) {
         const subcommandGroupObject = this._customOptions.find(
           (o) => o instanceof CustomSlashCommandSubcommandGroupBuilder && o.name === subcommandGroup
@@ -277,19 +280,25 @@ export default class CommandBuilder {
               interaction,
               interaction.options.getFocused()
             );
-            interaction.respond(res.filter((r) => r.name.length > 0 && r.value.length > 0));
+            interaction.respond(CommandBuilder.cleanAutoCompleteResponse(res));
             return;
           } else {
             const res = await selectedObject.autocompleteCallback(
               interaction,
               Number(interaction.options.getFocused())
             );
-            interaction.respond(res.filter((r) => r.name.length > 0));
+            interaction.respond(CommandBuilder.cleanAutoCompleteResponse(res));
           }
         }
       }
     } catch (e) {
       console.error(e);
     }
+  }
+
+  static cleanAutoCompleteResponse(res: {name: string, value: string | number}[]) {
+    const cleaned = res.filter((r) => r.name.length > 0 && r.value.toString().length > 0).splice(0, 25)
+    return  cleaned;
+   
   }
 }

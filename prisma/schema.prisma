@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -20,10 +20,10 @@ model Player {
 
   ownerOf     Town? @relation(name: "ownerOf")
   assistantOf Town? @relation(name: "assistantOf", fields: [assistantTownId], references: [id])
-  residentOf  Town? @relation(name: "residentOf", fields: [residentTownid], references: [id])
+  residentOf  Town? @relation(name: "residentOf", fields: [residentTownId], references: [id])
 
   assistantTownId String?
-  residentTownid  String?
+  residentTownId  String?
 
   teleports Teleport[]
 
@@ -114,7 +114,7 @@ model Trank {
   name String @unique
   description String
   tags String
-  owner String
+  // owner String @default("unknown")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   updatedBy String

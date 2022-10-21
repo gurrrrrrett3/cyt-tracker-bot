@@ -151,4 +151,8 @@ export default class Util {
     // @ts-ignore
     return array.filter((v) => v.includes(value));
   }
+
+  public static formatPlayerName(name: string) {
+    return name.replace(/_/g, "\\_");
+  }
 }

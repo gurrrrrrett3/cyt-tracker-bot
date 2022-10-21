@@ -3,14 +3,17 @@ import { bot, db } from "../../..";
 import Bot from "../../bot";
 import BaseModule from "../../loaders/base/baseModule";
 import Module from "../../loaders/base/module";
+import Time from "../../utils/time";
 import Util from "../../utils/utils";
 import MapManager from "./mapManager";
+import MapUpdateUpdateManager from "./updateManager";
 
 export default class MapModule extends Module {
   name = "map";
   description = "Manage connecting to the cyt map";
 
   mm = new MapManager();
+  um?: MapUpdateUpdateManager
 
   statusTimer: NodeJS.Timer
 
@@ -74,5 +77,12 @@ export default class MapModule extends Module {
     clearInterval(this.mm.townTimer)
 
     console.log("Unloaded Map module!");
+  }
+
+  override async onLoad(): Promise<void> {
+
+   setTimeout(async () => {
+      this.um = new MapUpdateUpdateManager();
+    },new Time("1 second").ms());
   }
 }

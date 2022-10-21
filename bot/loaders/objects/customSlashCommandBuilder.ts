@@ -75,6 +75,11 @@ export default class CommandBuilder {
     return this;
   }
 
+  setDefaultMemberPermissions(permissions: bigint): this {
+    this._builder.setDefaultMemberPermissions(permissions);
+    return this;
+  }
+  
   addStringOption(
     callback: (option: CustomSlashCommandStringOption) => CustomSlashCommandStringOption | undefined
   ): this {

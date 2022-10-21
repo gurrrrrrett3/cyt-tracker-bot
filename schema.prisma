@@ -1,0 +1,130 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id       String @id @default(cuid())
+  username String @unique
+  uuid     String @unique
+
+  // Relations
+  Session Session[]
+
+  ownerOf     Town? @relation(name: "ownerOf")
+  assistantOf Town? @relation(name: "assistantOf", fields: [assistantTownId], references: [id])
+  residentOf  Town? @relation(name: "residentOf", fields: [residentTownId], references: [id])
+
+  assistantTownId String?
+  residentTownId  String?
+
+  teleports Teleport[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Session {
+  id String @id @default(cuid())
+
+  player   Player @relation(fields: [playerId], references: [id])
+  playerId String
+
+  loginLocation  String @default("world:0:0")
+  logoutLocation String @default("world:0:0")
+
+  isOnline Boolean @default(true)
+
+  startedAt DateTime @default(now())
+  endedAt   DateTime @updatedAt
+}
+
+model Town {
+  id String @id @default(cuid())
+
+  name   String @unique
+  nation String?
+
+  owner   Player @relation(fields: [ownerId], references: [id], name: "ownerOf")
+  ownerId String @unique
+
+  assistants Player[] @relation(name: "assistantOf")
+  residents  Player[] @relation(name: "residentOf")
+
+  pvp Boolean
+
+  world String
+  x     Int
+  z     Int
+
+  coordinates TownCoordinates[]
+}
+
+model TownCoordinates {
+  id String @id @default(cuid())
+
+  group Int
+  index Int
+  world String
+  x     Int
+  z     Int
+
+  Town   Town?   @relation(fields: [townId], references: [id])
+  townId String?
+}
+
+model TeleportCoordinates {
+  id String @id @default(cuid())
+
+
+  world String
+  x     Int
+  z     Int
+
+  fromTeleport Teleport?  @relation(name: "from", references: [id], fields: [fromTeleportId])
+  fromTeleportId String? @unique
+  
+  toTeleport Teleport?  @relation(name: "to", references: [id], fields: [toTeleportId])
+  toTeleportId String? @unique
+}
+
+model Teleport {
+  id       String @id @default(cuid())
+  player   Player @relation(fields: [playerId], references: [id])
+  playerId String
+
+  from TeleportCoordinates? @relation(name: "from")
+  to  TeleportCoordinates? @relation(name: "to")
+  
+  time DateTime @default(now())
+}
+
+model Trank {
+  id String @id @default(cuid())
+  world String
+  x     Int
+  z     Int
+  name String @unique
+  description String
+  tags String
+  owner String @default("unknown")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  updatedBy String
+}
+
+model DiscordSettings {
+  id String @id @default(cuid())
+  guildId String @unique
+  nationStatusChannelId String?
+  nationUpdatesChannelId String?
+  nationName String?
+
+}

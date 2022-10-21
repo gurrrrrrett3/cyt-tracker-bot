@@ -2,7 +2,7 @@ import { bot, db } from "../../..";
 import Util from "../../utils/utils";
 import Player from "./resources/player";
 import Town from "./resources/town";
-import { Player as pPlayer, Session } from "@prisma/client";
+import { Player as pPlayer, Session, TownCoordinates, Town as pTown } from "@prisma/client";
 import Trank from "./resources/trank";
 
 export default class MapDatabaseManager {
@@ -128,55 +128,24 @@ export default class MapDatabaseManager {
         .catch((err) => console.error(err));
 
       if (!dbTown) return;
+    }
 
-      // fetch users that we do have
-      const users = await db.player.findMany({
+    for await (const resident of town.residents) {
+      const dbResident = await this.getPlayer(resident);
+      if (!dbResident) return console.error(`Could not find resident ${resident} for ${town.name}, skipping`);
+
+      await db.player.update({
         where: {
-          username: {
-            in: town.residents,
+          username: resident,
+        },
+        data: {
+          residentOf: {
+            connect: {
+              name: town.name,
+            },
           },
         },
       });
-
-      const missingUsers = town.residents
-        .filter((v) => !users.map((p) => p.username).includes(v))
-        .map(async (u) => {
-          return {
-            u,
-            i: await Util.getUUID(u),
-          };
-        });
-
-      for await (const user of missingUsers) {
-        await db.player
-          .create({
-            data: {
-              username: user.u,
-              uuid: user.i,
-              residentTownId: dbTown.id,
-              assistantTownId: town.assistants.includes(user.u) ? dbTown.id : undefined,
-            },
-          })
-          .catch((err) => console.error(err));
-      }
-
-      // set assistant status
-
-      await db.player
-        .updateMany({
-          where: {
-            AND: {
-              residentTownId: dbTown.id,
-              username: {
-                in: town.assistants,
-              },
-            },
-          },
-          data: {
-            assistantTownId: dbTown.id,
-          },
-        })
-        .catch((err) => console.error(err));
     }
 
     return dbTown;
@@ -210,12 +179,12 @@ export default class MapDatabaseManager {
       })
       .catch((err) => console.error(err));
 
-      // check teleport rank for newLocation
+    // check teleport rank for newLocation
 
-      const trank = await Trank.get(newPlayer)
-      if (!trank) {
-        await Trank.create(newPlayer)
-      }
+    const trank = await Trank.get(newPlayer);
+    if (!trank) {
+      await Trank.create(newPlayer);
+    }
   }
 
   public static async cleanPlayers() {
@@ -229,13 +198,13 @@ export default class MapDatabaseManager {
       orderBy: {
         updatedAt: "desc",
       },
-    })
+    });
 
     // ramdomze the order of the players and grab the first 10
 
     const batch = Util.randomizeArray(players).slice(0, 10);
 
-    if (players.length === 0) return true
+    if (players.length === 0) return true;
 
     const uuids = await Util.getBatchUUIDs(batch.map((p) => p.username));
 
@@ -254,7 +223,6 @@ export default class MapDatabaseManager {
           },
         })
         .catch((err) => {
-          console.error(err);
           erroredOut = true;
         });
 
@@ -277,11 +245,53 @@ export default class MapDatabaseManager {
           },
         })
         .catch((err) => {
-          console.error(err);
           erroredOut = true;
         });
     }
 
     return erroredOut;
+  }
+
+  static async convertTownData(
+    ...data: (pTown & {
+      assistants: pPlayer[];
+      residents: pPlayer[];
+      coordinates: TownCoordinates[];
+      owner: pPlayer;
+    })[]
+  ) {
+    return data.map((town) => {
+      return new Town(town.world, {
+        name: town.name,
+        nation: town.nation || "None",
+        pvp: town.pvp,
+        coords: {
+          x: town.x,
+          z: town.z,
+        },
+        assistants: town.assistants.map((a) => a.username),
+        residents: town.residents.map((r) => r.username),
+        mayor: town.owner.username,
+        polygon: [],
+      });
+    });
+  }
+
+  static async getTownByName(name: string): Promise<Town | undefined> {
+    const town = await db.town.findFirst({
+      where: {
+        name: name,
+      },
+      include: {
+        owner: true,
+        residents: true,
+        assistants: true,
+        coordinates: true,
+      },
+    });
+
+    if (!town) return;
+
+    return (await this.convertTownData(town)).at(0);
   }
 }

@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/gurrrrrrett3/discord-bot-template#readme",
   "dependencies": {
-    "@prisma/client": "^4.2.1",
+    "@prisma/client": "^4.5.0",
     "canvas": "^2.10.1",
     "chalk": "^4.1.2",
     "discord.js": "^14.2.0",
@@ -28,11 +28,11 @@
     "node-fetch": "^2.6.7",
     "node-html-parser": "^5.4.2-0",
     "point-in-polygon": "^1.1.0",
-    "prisma": "^4.2.1",
     "ws": "^8.8.1"
   },
   "devDependencies": {
     "@types/node-fetch": "^2.6.2",
-    "@types/point-in-polygon": "^1.1.1"
+    "@types/point-in-polygon": "^1.1.1",
+    "prisma": "^4.5.0"
   }
 }

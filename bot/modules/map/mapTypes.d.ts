@@ -112,20 +112,20 @@ interface PolygonMarker {
 
 interface PolygonData {
   points: {
-      x: number,
-      z: number
-  }[]
+    x: number;
+    z: number;
+  }[];
 }
 
-   interface TownData {
+interface TownData {
   name: string;
   nation: string;
   mayor: string;
   pvp: boolean;
   residents: string[];
   assistants: string[];
-  capital: boolean;
-  outpost: boolean;
+  capital?: boolean;
+  outpost?: boolean;
   polygon: PolygonData[] | undefined;
   coords: {
     x: number;
@@ -134,10 +134,49 @@ interface PolygonData {
 }
 
 interface FullTownData extends TownData {
-    world: string;
+  world: string;
 }
 
 interface pObject {
-  polygon: Polygon,
-  name: string
+  polygon: Polygon;
+  name: string;
+}
+
+interface UpdateFrame {
+  towns: {
+    created: Town[];
+    deleted: Town[];
+  };
+  assistants: {
+    added: {
+      town: Town;
+      player: string;
+    }[];
+    removed: {
+      town: Town;
+      player: string;
+    }[];
+  };
+  residents: {
+    added: {
+      town: Town;
+      player: string;
+    }[];
+    removed: {
+      town: Town;
+      player: string;
+    }[];
+  };
+  owners: {
+    before: Town;
+    after: Town;
+  }[];
+  pvp: {
+    new: boolean;
+    town: Town;
+  }[];
+  nations: {
+    before: Town;
+    after: Town;
+  }[];
 }

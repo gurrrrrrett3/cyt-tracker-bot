@@ -3,6 +3,7 @@ import BaseModule from "./baseModule";
 import { CustomCommandBuilder } from "../loaderTypes";
 import fs from "fs"
 import path from "path"
+import { Client } from "discord.js";
 
 export default class Module extends BaseModule {
      name: string = ""
@@ -15,6 +16,7 @@ export default class Module extends BaseModule {
     async init(bot: Bot): Promise<void> {}
     
     async onUnload() {}
+    async onLoad(client: Client) {}
 
     public async loadCommands() {
         if (!fs.existsSync(path.resolve(`./dist/bot/modules/${this.name}/commands`))) {
@@ -31,4 +33,5 @@ export default class Module extends BaseModule {
 
         return commands;
     }
+
 }

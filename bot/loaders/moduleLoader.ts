@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { bot } from "../..";
 import Bot from "../bot";
 import Module from "./base/module";
 import { CustomCommandBuilder } from "./loaderTypes";
@@ -32,6 +33,10 @@ export default class ModuleLoader {
     }
 
     console.log("Loaded Modules: " + this.loadedModules.size);
+
+    this.loadedModules.forEach(async (module) => {
+      await module.onLoad(this.bot.client);
+    })
 
     //load commands on ready
 

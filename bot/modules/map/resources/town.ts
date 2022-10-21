@@ -27,8 +27,8 @@ export default class Town {
         this.pvp = data.pvp;
         this.residents = data.residents;
         this.assistants = data.assistants;
-        this.capital = data.capital;
-        this.outpost = data.outpost;
+        this.capital = data.capital || false;
+        this.outpost = data.outpost || false;
         this.coords = data.coords;
         
         if (data.polygon) {

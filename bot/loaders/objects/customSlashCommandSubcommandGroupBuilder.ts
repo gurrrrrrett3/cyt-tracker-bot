@@ -55,7 +55,7 @@ export default class CustomSlashCommandSubcommandGroupBuilder {
   }
 
   addSubcommand(
-    callback: (option: CustomSlashCommandSubcommandBuilder) => CustomSlashCommandSubcommandBuilder | undefined
+    callback: (option: CustomSlashCommandSubcommandBuilder) => any
   ): this {
     const opt = new CustomSlashCommandSubcommandBuilder();
     let res = callback(opt);
@@ -96,15 +96,7 @@ export default class CustomSlashCommandSubcommandGroupBuilder {
   }
 
   async handleAutocomplete(interaction: AutocompleteInteraction): Promise<void> {
-
-    const thisSubCommandGroup = interaction.options.data
-    .find((x) => x.type === ApplicationCommandOptionType.SubcommandGroup && x.name === this._builder.name)
-
-    if (!thisSubCommandGroup) {
-      return
-    }
-
-    const subcommand = thisSubCommandGroup.options?.find(
+    const subcommand = interaction.options.data.find(
       (opt) => opt.type == ApplicationCommandOptionType.Subcommand
     )
       ? interaction.options.getSubcommand()
@@ -118,7 +110,29 @@ export default class CustomSlashCommandSubcommandGroupBuilder {
       return;
     }
 
-    
     subCommandBuilder.handleAutocomplete(interaction);
+  }
+
+  public getMetadata(): {
+    name: string;
+    description: string;
+    options: {
+      subcommands: number,
+      options: number
+    }
+
+  } {
+    return {
+      name: this._builder.name,
+      description: this._builder.description,
+      options: {
+        subcommands: this._customOptions.length,
+        options: this._customOptions.reduce((acc, curr) => acc + curr.getOptionCount(), 0)
+      }
+    }
+  }
+
+  getCustomOptions() {
+    return this._customOptions;
   }
 }

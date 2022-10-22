@@ -1,5 +1,6 @@
 import fetch from "node-fetch";
 import { db } from "../..";
+import Logger from "./logger";
 import Time from "./time";
 
 export default class Util {
@@ -67,12 +68,20 @@ export default class Util {
     const json = await res.json().catch((err) => console.error(err));
     if (!json) return [];
 
-    console.log(usernames, json);
+    Logger.log("Utils", usernames, json);
 
     return json as {
       id: string;
       name: string;
     }[];
+  }
+
+  public static async getNameFromUUID(uuid: string): Promise<string | undefined> {
+    const res = await fetch(`https://playerdb.co/api/player/minecraft/${uuid}`);
+    const json = await res.json();
+    const username = json.data?.player?.username as string;
+
+    return username;
   }
 
   public static formatDiscordTime(
@@ -154,5 +163,20 @@ export default class Util {
 
   public static formatPlayerName(name: string) {
     return name.replace(/_/g, "\\_");
+  }
+
+  public static getColor(str: string) {
+    // calculate hash
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    // convert to hex
+    let color = "#";
+    for (let i = 0; i < 3; i++) {
+      const value = (hash >> (i * 8)) & 0xff;
+      color += ("00" + value.toString(16)).substr(-2);
+    }
+    return color;
   }
 }

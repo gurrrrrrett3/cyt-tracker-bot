@@ -4,7 +4,6 @@ import {
   LocaleString,
   LocalizationMap,
   SlashCommandIntegerOption,
-  SlashCommandNumberOption,
 } from "discord.js";
 import CustomSlashCommandNumberOption from "./customSlashCommandNumberOption";
 import CustomSlashCommandStringOption from "./customSlashCommandStringOption";

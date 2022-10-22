@@ -1,4 +1,5 @@
 import { db } from "../..";
+import Logger from "./logger";
 import Util from "./utils";
 
 export default class Query {
@@ -77,14 +78,14 @@ export default class Query {
       const lastCommand = data[data.length - 1];
       const secondLastCommand = data[data.length - 2];
 
-      console.log(data, lastCommand, `"${string}"`);
+      Logger.log("Query", data, lastCommand, `"${string}"`);
 
       // if the last command is in, but we don't have a valid value, suggest all tables
       if (
         lastCommand.command == "in" &&
         !Object.keys(this.DATATYPES.tables)?.includes(lastCommand.value || "")
       ) {
-        console.log("invalid table");
+        Logger.log("Query", "invalid table");
         // @ts-ignore
         return Object.keys(this.DATATYPES.tables).map((v) => this.genString(string, `in ${v}`, "replace"));
       }
@@ -93,7 +94,7 @@ export default class Query {
         lastCommand.command == "in" &&
         Object.keys(this.DATATYPES.tables)?.includes(lastCommand.value || "")
       ) {
-        console.log("in table");
+        Logger.log("Query", "in table");
         // @ts-ignore
         return this.DATATYPES.tables[table].map((v) => this.genString(string, `where ${v}`, "add"));
       }
@@ -104,7 +105,7 @@ export default class Query {
         // @ts-ignore
         (!this.DATATYPES.tables[table]?.includes(lastCommand.value || "") || !lastCommand.value)
       ) {
-        console.log("invalid column");
+        Logger.log("Query", "invalid column");
         // @ts-ignore
         return this.DATATYPES.tables[table].map((v: string) => this.genString(string, v, "add"));
       }
@@ -115,7 +116,7 @@ export default class Query {
         // @ts-ignore
         this.DATATYPES.tables[table]?.includes(lastCommand.value || "")
       ) {
-        console.log("valid column");
+        Logger.log("Query", "valid column");
         // @ts-ignore
         return this.DATATYPES.matchTypes.map((v) => this.genString(string, v, "add"));
       }
@@ -126,7 +127,7 @@ export default class Query {
         // @ts-ignore
         !this.DATATYPES.matchTypes.includes(lastCommand.command)
       ) {
-        console.log("invalid match type");
+        Logger.log("Query", "invalid match type");
         return this.DATATYPES.matchTypes.map((v) => this.genString(string, v, "replace"));
       }
 
@@ -135,7 +136,7 @@ export default class Query {
         secondLastCommand?.command == "where" &&
         this.DATATYPES.matchTypes.includes(lastCommand.command)
       ) {
-        console.log("valid match type");
+        Logger.log("Query", "valid match type");
         // @ts-ignore
         const res = await db[table].findMany({
           where: {
@@ -154,7 +155,7 @@ export default class Query {
 
       return ["Error, unknown error"];
     } catch (e: any) {
-      console.log(e);
+      Logger.log("Query", e);
       return [e.message];
     }
   }

@@ -8,7 +8,7 @@ const moduleDescription = args.slice(1).join(" ");
 const modulePath = path.resolve(`./bot/modules/${moduleName}`);
 
 if (fs.existsSync(modulePath)) {
-    console.log("Error: Module already exists | Cancelling");
+    Logger.log("Error: Module already exists | Cancelling");
     process.exit(1);
 }
 
@@ -30,4 +30,4 @@ fs.mkdirSync(modulePath);
 fs.mkdirSync(`${modulePath}/commands`);
 fs.writeFileSync(`${modulePath}/index.ts`, moduleIndex);
 
-console.log(`Created module ${moduleName}`);
+Logger.log(`Created module ${moduleName}`);

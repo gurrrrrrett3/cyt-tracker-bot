@@ -2,6 +2,7 @@ import {
     createCanvas,
     loadImage,
 } from 'canvas';
+import Logger from '../../utils/logger';
 import MapConnection from './mapConnection';
 
 export default class MapCanvas {
@@ -59,7 +60,7 @@ export default class MapCanvas {
         const cropX = xOffset - 256;
         const cropY = yOffset - 256;
 
-        console.log(cropX, cropY);
+        Logger.log("Canvas", cropX, cropY);
 
         const cropped = canvas.getContext("2d").getImageData(cropX, cropY, 512, 512)
         const croppedCanvas = createCanvas(512, 512);
@@ -67,7 +68,7 @@ export default class MapCanvas {
 
         cctx.putImageData(cropped, 0, 0);
 
-        return `data:image/png;base64,${croppedCanvas.toBuffer("image/png").toString("base64")}`;
+        return croppedCanvas.toBuffer("image/png");
     }
 
     public static async drawPlayerMapThumbnail(world: string, x: number, y: number, zoom: 0 | 1 | 2 | 3, yaw: number) {

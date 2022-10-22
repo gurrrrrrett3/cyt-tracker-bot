@@ -4,6 +4,7 @@ import ws from "ws";
 import MapModule from "../map";
 import MapConnection from "../map/mapConnection";
 import MapCanvas from "../map/mapCanvas";
+import Logger from "../../utils/logger";
 
 export default class WsModule extends Module {
   name = "ws";
@@ -11,18 +12,19 @@ export default class WsModule extends Module {
 
   // declare other public variables here
 
-  ws: ws;
+  ws!: ws;
 
-  constructor(bot: Bot) {
-    super(bot);
-        this.ws = new ws("ws://95.216.205.34:3001/")
-        this.ws.on("open", () => {
-          this.ws.send("botserver:ready");
-        })  
-        this.ws.on("message", (data) => {
-            this.dataHandler(data.toString())
-        })
-    
+  override async onLoad(): Promise<Boolean> {
+    this.ws = new ws("ws://95.216.205.34:3001/")
+    this.ws.on("open", () => {
+      this.ws.send("botserver:ready");
+      Logger.log("WS", "Connected to websocket server");
+    })  
+    this.ws.on("message", (data) => {
+        this.dataHandler(data.toString())
+    })
+
+    return true;
   }
 
  async dataHandler(data: string) {
@@ -32,7 +34,7 @@ export default class WsModule extends Module {
       [key: string]: any;
     };
 
-    console.log(`[WS] ${id} ${d.type}`);
+    Logger.log("WS",`${id} ${d.type}`);
 
     switch (d.type) {
       case "onlineList":
@@ -68,7 +70,7 @@ export default class WsModule extends Module {
   }
 
    sendData(id: string, data: Object | Array<any>) {
-    console.log(`[WS] Sending data of length ${JSON.stringify(data).length} to ${id}`);
+    Logger.log(`[WS] Sending data of length ${JSON.stringify(data).length} to ${id}`);
     this.ws.send(`botserver:${id}:${JSON.stringify(data)}`);
   }
 

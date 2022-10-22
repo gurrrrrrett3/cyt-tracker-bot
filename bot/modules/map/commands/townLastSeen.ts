@@ -2,6 +2,7 @@ import { Colors, EmbedBuilder } from "discord.js";
 import { Data } from "ws";
 import MapModule from "..";
 import SlashCommandBuilder from "../../../loaders/objects/customSlashCommandBuilder";
+import Logger from "../../../utils/logger";
 import Util from "../../../utils/utils";
 import MapDatabaseManager from "../mapDatabaseManager";
 
@@ -30,7 +31,7 @@ const Command = new SlashCommandBuilder()
     await interaction.deferReply();
 
     const townData = await MapDatabaseManager.getTownByName(town);
-    console.log(townData);
+    Logger.log("TownLastSeen", townData);
     const residents = townData?.residents;
 
     if (!residents || residents.length == 0) {

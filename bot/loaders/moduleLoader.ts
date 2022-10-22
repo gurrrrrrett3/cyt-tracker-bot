@@ -1,48 +1,40 @@
 import fs from "fs";
 import path from "path";
-import { bot } from "../..";
+import Logger from "../utils/logger";
 import Bot from "../bot";
 import Module from "./base/module";
 import { CustomCommandBuilder } from "./loaderTypes";
 
 export default class ModuleLoader {
-  public loadedModules: Map<string, Module> = new Map();
   public modules: Map<string, Module> = new Map();
 
-  constructor(private bot: Bot) {
-    this.loadModules();
-  }
+  constructor(private bot: Bot) {}
 
   public addModule(module: Module) {
-    this.loadedModules.set(module.name, module);
     this.modules.set(module.name, module);
   }
 
-  public getModule(name: string): Module | undefined {
-    return this.loadedModules.get(name);
+  public getModule(name: string): any {
+    return this.modules.get(name);
   }
 
   public loadModules() {
     const modulesPath = path.join(__dirname, "../modules");
-    const loadedModules = fs.readdirSync(modulesPath);
-    for (const mod of loadedModules) {
+    const modules = fs.readdirSync(modulesPath);
+    for (const mod of modules) {
       const modulePath = path.join(modulesPath, mod);
       const moduleFile = require(modulePath);
       const m = new moduleFile.default(this.bot);
       this.addModule(m);
     }
 
-    console.log("Loaded Modules: " + this.loadedModules.size);
+    Logger.log("ModuleLoader", "Loaded modules: " + this.modules.size);
 
-    this.loadedModules.forEach(async (module) => {
-      await module.onLoad(this.bot.client);
-    })
-
-    //load commands on ready
+    // load commands on ready
 
     this.bot.client.once("ready", async () => {
       const promises: Promise<CustomCommandBuilder[]>[] = [];
-      this.loadedModules.forEach(async (module) => {
+      this.modules.forEach(async (module) => {
         promises.push(
           new Promise(async (resolve) => {
             const moduleCommands = await module.loadCommands();
@@ -57,15 +49,30 @@ export default class ModuleLoader {
       });
 
       this.bot.commandLoader.load(commands);
+
+      this.modules.forEach((module) => {
+        module.onLoad();
+      })
     });
   }
 
   public getAllModules(): Module[] {
-    return Array.from(this.modules.values());
+    const modulesPath = path.join(__dirname, "../modules");
+    const modules = fs.readdirSync(modulesPath);
+
+    const moduleObjects: Module[] = [];
+    for (const mod of modules) {
+      const modulePath = path.join(modulesPath, mod);
+      const moduleFile = require(modulePath);
+      const m = new moduleFile.default(this.bot);
+
+      moduleObjects.push(m);
+    }
+    return moduleObjects;
   }
 
   public getLoadedModules(): Module[] {
-    return Array.from(this.loadedModules.values());
+    return Array.from(this.modules.values());
   }
 
   public getUnloadedModules(): Module[] {
@@ -85,7 +92,7 @@ export default class ModuleLoader {
   }
 
   public isModuleLoaded(moduleName: string): boolean {
-    return this.loadedModules.has(moduleName);
+    return this.modules.has(moduleName);
   }
 
   public async loadModule(moduleName: string): Promise<boolean> {
@@ -110,15 +117,8 @@ export default class ModuleLoader {
 
     const moduleCommands = this.getModuleCommands(moduleName);
     this.bot.commandLoader.unload(moduleCommands);
-    
-    fs.readdirSync(path.resolve(`./dist/bot/modules/${moduleName}/commands`)).forEach((commandFile) => {
-      delete require.cache[require.resolve(path.resolve(`./dist/bot/modules/${moduleName}/commands/${commandFile}`))]
-      console.log(`Deleted cache for ${commandFile}`)
-    })
 
-    await module.onUnload();
-    delete require.cache[require.resolve(path.join(__dirname, "../modules", moduleName))];
-    this.loadedModules.delete(moduleName);
+    this.modules.delete(moduleName);
 
     return true;
   }

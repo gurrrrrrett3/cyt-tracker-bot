@@ -1,4 +1,5 @@
 import fetch from "node-fetch";
+import Logger from "../../utils/logger";
 import MapParser from "./mapParser";
 import Player from "./resources/player";
 
@@ -23,7 +24,7 @@ export default class MapConnection {
       const towns = MapParser.parseMarkerFile(world, json)
 
       for (const town of towns) {
-        console.log(`Saving ${town.name}`)
+        // Logger.log("MapConnection", `Saving ${town.name}`)
         await town.toDb()
       }
     }

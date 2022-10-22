@@ -14,6 +14,14 @@ const Command = new SlashCommandBuilder()
         .setName("query")
         .setDescription("The query to send to the the databse, in cytq format")
         .setRequired(true)
+        .setAutocomplete(async (interaction, input) => {
+          return await Query.suggest(input).then((suggestions) => {
+            return suggestions.map((suggestion) => ({
+              name: suggestion,
+              value: suggestion,
+            }));
+          });
+        })
     )
     .setFunction(async (interaction) => {
     const query = interaction.options.getString("query", true);

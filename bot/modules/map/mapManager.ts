@@ -13,6 +13,7 @@ export default class MapManager {
   public isSaving: boolean = false;
 
   constructor() {
+
     this.currentPlayerData = {
       players: [],
       max: 0,

@@ -12,6 +12,7 @@ import TrankManager from "../trankManager";
 import Util from "../../../utils/utils";
 import SlashCommandBuilder from "../../../loaders/objects/customSlashCommandBuilder";
 import { Teleport, TeleportCoordinates, Trank } from "@prisma/client";
+import Logger from "../../../utils/logger";
 
 const Command = new SlashCommandBuilder()
   .setName("trank")
@@ -168,7 +169,7 @@ async function openEditor(
       return;
     }
 
-    console.log(t);
+    Logger.log("Trank", t);
 
     const id = Util.randomKey(10);
 

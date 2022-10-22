@@ -8,10 +8,10 @@ import {
   SlashCommandChannelOption,
   SlashCommandMentionableOption,
   SlashCommandRoleOption,
-  SlashCommandStringOption,
   SlashCommandSubcommandBuilder,
   SlashCommandUserOption,
 } from "discord.js";
+import Logger from "../../utils/logger";
 import CommandBuilder from "./customSlashCommandBuilder";
 import CustomSlashCommandIntegerOption from "./customSlashCommandIntegerOption";
 import CustomSlashCommandNumberOption from "./customSlashCommandNumberOption";
@@ -25,7 +25,7 @@ export default class CustomSlashCommandSubcommandBuilder {
     | CustomSlashCommandIntegerOption
     | CustomSlashCommandNumberOption
   )[] = [];
-  execute: (interaction: ChatInputCommandInteraction) => Promise<void> = async () => Promise.resolve();
+  execute: (interaction: ChatInputCommandInteraction) => any = async () => Promise.resolve();
 
   constructor() {}
 
@@ -36,7 +36,7 @@ export default class CustomSlashCommandSubcommandBuilder {
     return this;
   }
 
-  setFunction(callback: (interaction: ChatInputCommandInteraction) => Promise<void>): this {
+  setFunction(callback: (interaction: ChatInputCommandInteraction) => any): this {
     this.execute = callback;
     return this;
   }
@@ -187,22 +187,26 @@ export default class CustomSlashCommandSubcommandBuilder {
       if (selectedOption && selectedOption.autocompleteCallback) {
         if (selectedOption.takesStringTypeOption()) {
           await interaction.respond(
-            CommandBuilder.cleanAutoCompleteResponse(
-            await selectedOption.autocompleteCallback(interaction, interaction.options.getFocused())
+            CommandBuilder.cleanAutocompleteResponse(
+              await selectedOption.autocompleteCallback(interaction, interaction.options.getFocused())
             )
           );
           return;
         } else {
           await interaction.respond(
-            CommandBuilder.cleanAutoCompleteResponse(
-            await selectedOption.autocompleteCallback(interaction, Number(interaction.options.getFocused()))
+            CommandBuilder.cleanAutocompleteResponse(
+              await selectedOption.autocompleteCallback(interaction, Number(interaction.options.getFocused()))
             )
           );
           return;
         }
       }
     } catch (error) {
-      console.error(error);
+      Logger.error("CustomSlashCommandSubcommandBuilder", this.name, error);
     }
+  }
+
+  getOptionCount() {
+    return this._builder.options.length;
   }
 }

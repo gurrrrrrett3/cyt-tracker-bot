@@ -4,6 +4,7 @@ import Player from "./resources/player";
 import Town from "./resources/town";
 import { Player as pPlayer, Session, TownCoordinates, Town as pTown } from "@prisma/client";
 import Trank from "./resources/trank";
+import Logger from "../../utils/logger";
 
 export default class MapDatabaseManager {
   public static async getPlayer(username: string, uuid?: string) {
@@ -16,7 +17,7 @@ export default class MapDatabaseManager {
           Session: true,
         },
       })
-      .catch((err) => console.error(err));
+      .catch((err) => Logger.error("MapDatabaseManager", err));
 
     if (dbPlayer?.uuid.startsWith("Invalid")) {
       const newPlayer = await db.player
@@ -31,16 +32,16 @@ export default class MapDatabaseManager {
             Session: true,
           },
         })
-        .catch((err) => console.error(err));
+        .catch((err) => Logger.error("MapDatabaseManager", err));
 
       if (newPlayer) {
-        console.log(`Updated ${username}'s UUID, from ${dbPlayer.uuid} to ${newPlayer.uuid}`);
+        // Logger.log("MapDatabaseManager", `Updated ${username}'s UUID, from ${dbPlayer.uuid} to ${newPlayer.uuid}`);
         dbPlayer = newPlayer;
       }
     }
 
-    if (!dbPlayer) {
-      console.log(`Creating db index for ${username}`);
+    if (!dbPlayer && !(await db.player.findFirst({ where: { uuid } }))) {
+      // Logger.log("MapDatabaseManager", `Creating db index for ${username}`);
       dbPlayer = await db.player
         .create({
           data: {
@@ -51,8 +52,16 @@ export default class MapDatabaseManager {
             Session: true,
           },
         })
-        .catch((err) => console.error(err));
+        .catch((err) => Logger.error("MapDatabaseManager", err));
     }
+
+    if (!dbPlayer) {
+      // name change, attempt to update
+
+      const res = await this.updatePlayerName(username);
+      if (res) dbPlayer = res;
+    }
+
     return dbPlayer as pPlayer & {
       Session: Session[];
     };
@@ -82,6 +91,26 @@ export default class MapDatabaseManager {
     ).map((player) => player.username);
   }
 
+  public static async searchTowns(
+    name: string,
+    options: {
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<string[]> {
+    return (
+      await db.town.findMany({
+        where: {
+          name: {
+            contains: name,
+          },
+        },
+        take: options.limit,
+        skip: options.offset,
+      })
+    ).map((town) => town.name);
+  }
+
   public static async getTown(town: Town) {
     let dbTown = await db.town
       .findFirst({
@@ -96,11 +125,14 @@ export default class MapDatabaseManager {
           residents: true,
         },
       })
-      .catch((err) => console.error(err));
+      .catch((err) => Logger.error("MapDatabaseManager", err));
 
     if (!dbTown) {
-      const owner = await this.getPlayer(town.mayor);
-      if (!owner) return console.error(`Could not find owner for ${town.name}, skipping`);
+      let owner = await this.getPlayer(town.mayor);
+      if (!owner) {
+        const res = await this.updatePlayerName(town.mayor)      
+        if (res) owner = res;
+      }
 
       dbTown = await db.town
         .create({
@@ -125,14 +157,24 @@ export default class MapDatabaseManager {
             residents: true,
           },
         })
-        .catch((err) => console.error(err));
+        .catch(async (err) => {
+          // confilicting town, remove from db
+          await db.town
+            .delete({
+              where: {
+                ownerId: owner.id,
+              },
+            })
+            .catch((err) => Logger.error("MapDatabaseManager", err));
+
+          })
 
       if (!dbTown) return;
     }
 
     for await (const resident of town.residents) {
       const dbResident = await this.getPlayer(resident);
-      if (!dbResident) return console.error(`Could not find resident ${resident} for ${town.name}, skipping`);
+      if (!dbResident) return Logger.error("MapDatabaseManager", `Could not find resident ${resident} for ${town.name}, skipping`);
 
       await db.player.update({
         where: {
@@ -177,7 +219,7 @@ export default class MapDatabaseManager {
           },
         },
       })
-      .catch((err) => console.error(err));
+      .catch((err) => Logger.error("MapDatabaseManager", err));
 
     // check teleport rank for newLocation
 
@@ -293,5 +335,32 @@ export default class MapDatabaseManager {
     if (!town) return;
 
     return (await this.convertTownData(town)).at(0);
+  }
+
+  static async updatePlayerName(username: string) {
+    const uuid = await Util.getUUID(username);
+    const player = await db.player.update({
+      where: {
+        uuid,
+      },
+      data: {
+        uuid: uuid,
+        username,
+      },
+      include: {
+        Session: true,
+      }
+    }).catch(async (err) => {
+      Logger.error("MapDatabaseManager", `Could not update player ${username} with uuid ${uuid}, attempting to create new player`);
+
+      const res = await this.getPlayer(username, uuid);
+      if (!res) {
+        Logger.error("MapDatabaseManager", `Could not create new player ${username} with uuid ${uuid}`);
+      }
+    });
+
+    Logger.log("MapDatabaseManager", `Updated ${uuid} to ${username}`);
+
+    return player
   }
 }

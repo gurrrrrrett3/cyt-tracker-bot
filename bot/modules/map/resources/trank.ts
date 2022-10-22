@@ -1,5 +1,6 @@
 import { Trank as dbTrank } from "@prisma/client";
 import { db } from "../../../..";
+import Logger from "../../../utils/logger";
 
 export default class Trank {
   public readonly id: string;
@@ -81,7 +82,7 @@ export default class Trank {
       },
     });
 
-    console.log(`Created trank ${trank.name} at ${loc.x},${loc.z}`);
+    Logger.log("Trank", `Created trank ${trank.name} at ${loc.x},${loc.z}`);
 
     return new Trank(trank);
   } 

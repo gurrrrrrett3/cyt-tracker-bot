@@ -19,7 +19,11 @@ const client = new Client({
     ]
 })
 
+client.setMaxListeners(0);
+
+client.login(process.env.TOKEN);
+
 export const bot = new Bot(client);
 export const db = new PrismaClient()
 
-client.login(process.env.TOKEN);
+bot.moduleLoader.loadModules()

@@ -9,7 +9,20 @@ const Command = new SlashCommandBuilder()
   .setName("teleports")
   .setDescription("Get a player's teleport history")
   .addStringOption((o) =>
-    o.setName("player").setDescription("The player to get the teleport history of").setRequired(true)
+    o
+      .setName("player")
+      .setDescription("The player to get the teleport history of")
+      .setRequired(true)
+      .setAutocomplete(async (interaction, input) => {
+        const players = await MapDatabaseManager.searchPlayer(input, {
+          limit: 25,
+        });
+
+        return players.map((player) => ({
+          name: player,
+          value: player,
+        }));
+      })
   )
   .setFunction(async (interaction) => {
     const player = await MapDatabaseManager.getPlayer(interaction.options.getString("player", true));

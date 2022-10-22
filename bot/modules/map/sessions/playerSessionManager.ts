@@ -1,4 +1,5 @@
 import { db } from "../../../..";
+import Logger from "../../../utils/logger";
 import MapDatabaseManager from "../mapDatabaseManager";
 import Player from "../resources/player";
 
@@ -18,7 +19,7 @@ export default class PlayerSessionManager {
       })
       .catch((err) => console.error(err));
 
-      console.log(`Created session for ${player.name}, id: ${session?.id}`);
+     // Logger.log("PlayerSessionManager", `Created session for ${player.name}, id: ${session?.id}`);
 
     return session;
   }
@@ -49,9 +50,9 @@ export default class PlayerSessionManager {
             id: session.id,
           },
         })
-        .catch((err) => console.error(err)).then((s) => console.log(`Updated session ${s?.id}`)) 
+        .catch((err) => console.error(err))
     } else {
-      console.log(`Could not find linked session for ${player.name}, removing from database`);
+      // Logger.log("PlayerSessionManager", `Could not find linked session for ${player.name}, removing from database`);
       await db.session.deleteMany({
         where: {
           playerId: dbPlayer.id,
@@ -70,7 +71,7 @@ export default class PlayerSessionManager {
       })
       .catch((err) => console.error(err));
 
-    if (sessions) console.log(`Cleaned ${sessions.count} sessions`);
+    if (sessions) Logger.log("PlayerSessionManager", `Cleaned ${sessions.count} sessions`);
 
     return sessions;
   }

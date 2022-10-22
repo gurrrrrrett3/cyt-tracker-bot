@@ -12,6 +12,7 @@ import {
   SlashCommandRoleOption,
   SlashCommandUserOption,
 } from "discord.js";
+import Logger from "../../utils/logger";
 import CustomSlashCommandIntegerOption from "./customSlashCommandIntegerOption";
 import CustomSlashCommandNumberOption from "./customSlashCommandNumberOption";
 import CustomSlashCommandStringOption from "./customSlashCommandStringOption";
@@ -65,6 +66,17 @@ export default class CommandBuilder {
     this._builder.setDescription(description);
     return this;
   }
+
+  setDMPermission(allowed: boolean): this {
+    this._builder.setDMPermission(allowed);
+    return this;
+  }
+
+  setDefaultMemberPermissions(permissions: string | number | bigint | null | undefined) {
+    this._builder.setDefaultMemberPermissions(permissions);
+    return this;
+  }
+
   setDescriptionLocalization(locale: LocaleString, localizedDescription: string | null) {
     this._builder.setDescriptionLocalization(locale, localizedDescription);
     return this;
@@ -75,11 +87,6 @@ export default class CommandBuilder {
     return this;
   }
 
-  setDefaultMemberPermissions(permissions: bigint): this {
-    this._builder.setDefaultMemberPermissions(permissions);
-    return this;
-  }
-  
   addStringOption(
     callback: (option: CustomSlashCommandStringOption) => CustomSlashCommandStringOption | undefined
   ): this {
@@ -206,7 +213,7 @@ export default class CommandBuilder {
   }
 
   setModule(module: string) {
-    this._module = module
+    this._module = module;
   }
 
   getModule(): string {
@@ -248,22 +255,19 @@ export default class CommandBuilder {
 
   async handleAutocomplete(interaction: AutocompleteInteraction): Promise<void> {
     try {
-      const subcommandGroupIndex = interaction.options.data.findIndex(
-        (opt) => opt.type == ApplicationCommandOptionType.SubcommandGroup
+      const subcommand = interaction.options.data.find(
+        (opt) => opt.type == ApplicationCommandOptionType.Subcommand
       )
-
-       const subcommandGroup = interaction.options.data.find(
+        ? interaction.options.getSubcommand()
+        : null;
+      const subcommandGroup = interaction.options.data.find(
         (opt) => opt.type == ApplicationCommandOptionType.SubcommandGroup
       )
         ? interaction.options.getSubcommandGroup()
         : null;
 
-      const subcommand = interaction.options.data[subcommandGroupIndex].options?.find(
-        (opt) => opt.type == ApplicationCommandOptionType.Subcommand
-      )
-        ? interaction.options.getSubcommand()
-        : null;
-        
+      Logger.log("", subcommandGroup, subcommand);
+
       if (subcommandGroup) {
         const subcommandGroupObject = this._customOptions.find(
           (o) => o instanceof CustomSlashCommandSubcommandGroupBuilder && o.name === subcommandGroup
@@ -285,25 +289,78 @@ export default class CommandBuilder {
               interaction,
               interaction.options.getFocused()
             );
-            interaction.respond(CommandBuilder.cleanAutoCompleteResponse(res));
+            interaction.respond(CommandBuilder.cleanAutocompleteResponse(res));
             return;
           } else {
             const res = await selectedObject.autocompleteCallback(
               interaction,
               Number(interaction.options.getFocused())
             );
-            interaction.respond(CommandBuilder.cleanAutoCompleteResponse(res));
+            interaction.respond(CommandBuilder.cleanAutocompleteResponse(res));
           }
         }
       }
     } catch (e) {
-      console.error(e);
+      Logger.error(`CustomSlashCommandBuilder`, this.getName(), e);
     }
   }
 
-  static cleanAutoCompleteResponse(res: {name: string, value: string | number}[]) {
-    const cleaned = res.filter((r) => r.name.length > 0 && r.value.toString().length > 0).splice(0, 25)
-    return  cleaned;
-   
+  getMetadata() {
+    const counts = {
+      subcommands: 0,
+      subcommandGroups: 0,
+      options: 0,
+    };
+
+    this._customOptions.forEach((o) => {
+      if (o instanceof CustomSlashCommandSubcommandBuilder) {
+        counts.subcommands++;
+        counts.options += o.getOptionCount();
+      } else if (o instanceof CustomSlashCommandSubcommandGroupBuilder) {
+        counts.subcommandGroups++;
+        const meta = o.getMetadata();
+        counts.subcommands += meta.options.subcommands;
+        counts.options += meta.options.options;
+      } else {
+        counts.options++;
+      }
+    });
+
+    return {
+      name: this._builder.name,
+      description: this._builder.description,
+      options: counts,
+    };
+  }
+
+  getCustomOptions() {
+    return this._customOptions;
+  }
+
+  static cleanAutocompleteResponse(
+    res: {
+      name: string;
+      value: string;
+    }[]
+  ): {
+    name: string;
+    value: string;
+  }[];
+  static cleanAutocompleteResponse(
+    res: {
+      name: string;
+      value: number;
+    }[]
+  ): {
+    name: string;
+    value: number;
+  }[];
+  static cleanAutocompleteResponse(
+    res: {
+      name: string;
+      value: string | number;
+    }[]
+  ) {
+    return res.filter((r) => r.name.length > 0).slice(0, 25);
   }
 }

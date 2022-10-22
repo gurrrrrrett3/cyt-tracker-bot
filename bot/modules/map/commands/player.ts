@@ -4,6 +4,7 @@ import {
 import { db } from "../../../..";
 import Util from "../../../utils/utils";
 import SlashCommandBuilder from "../../../loaders/objects/customSlashCommandBuilder";
+import MapDatabaseManager from "../mapDatabaseManager";
 
 
 const Command =  new SlashCommandBuilder()
@@ -14,6 +15,16 @@ const Command =  new SlashCommandBuilder()
         .setName("player")
         .setDescription("The player to get data for")
         .setRequired(true)
+        .setAutocomplete(async (interaction, input) => {
+          const players = await MapDatabaseManager.searchPlayer(input, {
+            limit: 25,
+          })
+
+          return players.map(player => ({
+            name: player,
+            value: player,
+          }))
+        })
     )
     .setFunction(async (interaction) => {
     

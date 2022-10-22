@@ -1,3 +1,4 @@
+import Logger from "../../utils/logger";
 import Util from "../../utils/utils";
 import MapDatabaseManager from "./mapDatabaseManager";
 import PlayerSessionManager from "./sessions/playerSessionManager";
@@ -16,12 +17,12 @@ export default class MapEventManager {
 
     for (const player of playersJoined) {
       PlayerSessionManager.onJoin(player);
-      console.log(`${player.name} joined the server`);
+      // Logger.log("MapEventHandler", `${player.name} joined the server`);
     }
-
+ 
     for (const player of playersLeft) {
       PlayerSessionManager.onLeave(player);
-        console.log(`${player.name} left the server`);
+       // Logger.log("MapEventHandler", `${player.name} left the server`);
     }
 
     for (const player of oldPlayers.players) {

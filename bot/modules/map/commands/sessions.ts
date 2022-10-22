@@ -9,7 +9,20 @@ const Command = new SlashCommandBuilder()
   .setName("sessions")
   .setDescription("Get a list of sessions for a player")
   .addStringOption((o) =>
-    o.setName("player").setDescription("The player to get the sessions for").setRequired(true)
+    o
+      .setName("player")
+      .setDescription("The player to get the sessions for")
+      .setRequired(true)
+      .setAutocomplete(async (interaction, input) => {
+        const players = await MapDatabaseManager.searchPlayer(input, {
+          limit: 25,
+        });
+
+        return players.map((player) => ({
+          name: player,
+          value: player,
+        }));
+      })
   )
   .setFunction(async (interaction) => {
     const username = interaction.options.getString("player", true);

@@ -13,7 +13,7 @@ description = "<desc>";
     override async onUnload(): Promise<void> {
     // handle unloading resources and stopping timers
 
-    console.log("Unloaded <nameUppercase> module!");
+    Logger.log("Unloaded <nameUppercase> module!");
   }
 
 }

@@ -1,24 +1,40 @@
 import { ActivityType } from "discord.js";
 import { bot, db } from "../../..";
 import Bot from "../../bot";
-import BaseModule from "../../loaders/base/baseModule";
 import Module from "../../loaders/base/module";
+import Logger from "../../utils/logger";
 import Time from "../../utils/time";
 import Util from "../../utils/utils";
 import MapManager from "./mapManager";
-import MapUpdateUpdateManager from "./updateManager";
+import MapUpdateManager from "./updateManager";
 
 export default class MapModule extends Module {
   name = "map";
   description = "Manage connecting to the cyt map";
 
-  mm = new MapManager();
-  um?: MapUpdateUpdateManager
+  mm!: MapManager
+  um?: MapUpdateManager
 
-  statusTimer: NodeJS.Timer
+  statusTimer: NodeJS.Timer | undefined
 
-  constructor(bot: Bot) {
-    super(bot);
+  static getMapModule(): MapModule {
+    return bot.moduleLoader.getModule("map") as MapModule;
+  }
+
+  override async onUnload(): Promise<boolean> {
+    // handle unloading resources and stopping timers
+    
+    clearInterval(this.statusTimer);
+    clearInterval(this.mm.timer);
+    clearInterval(this.mm.townTimer)
+
+    Logger.log("Unloaded Map module!");
+    return true;
+  }
+
+  override async onLoad(): Promise<boolean> {
+    
+    this.mm = new MapManager();
 
     let i = 0;
     this.statusTimer =  setInterval(async () => {
@@ -63,26 +79,9 @@ export default class MapModule extends Module {
       i++;
       i = i > 4 ? 0 : i;
     }, 5000);
-  }
 
-  static getMapModule(): MapModule {
-    return bot.moduleLoader.getModule("map") as MapModule;
-  }
-
-  override async onUnload(): Promise<void> {
-    // handle unloading resources and stopping timers
-    
-    clearInterval(this.statusTimer);
-    clearInterval(this.mm.timer);
-    clearInterval(this.mm.townTimer)
-
-    console.log("Unloaded Map module!");
-  }
-
-  override async onLoad(): Promise<void> {
-
-   setTimeout(async () => {
-      this.um = new MapUpdateUpdateManager();
-    },new Time("1 second").ms());
+    this.um = new MapUpdateManager();
+    Logger.log("MapModule", "Loaded Map module!");
+    return true;
   }
 }

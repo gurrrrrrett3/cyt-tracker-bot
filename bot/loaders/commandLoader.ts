@@ -5,12 +5,8 @@ import {
   Collection,
   Client,
 } from "discord.js";
+import Logger from "../utils/logger";
 import { CustomCommandBuilder } from "./loaderTypes";
-import CommandBuilder from "./objects/customSlashCommandBuilder";
-
-interface Command {
-  default: CommandBuilder;
-}
 
 export default class CommandLoader {
   public client: Client;
@@ -23,12 +19,12 @@ export default class CommandLoader {
   async load(commands: CustomCommandBuilder[]) {
     const applicationId = this.client.application?.id ?? this.client.user?.id ?? "unknown";
 
-    //Collect list of command files
-    let commandsToDeploy: RESTPostAPIApplicationCommandsJSONBody[] = [];
+    // Collect list of command files
+    const commandsToDeploy: RESTPostAPIApplicationCommandsJSONBody[] = [];
 
-    console.log(`Deploying ${commands.length} commands`);
+    Logger.log("CommandLoader", `Deploying ${commands.length} commands`);
 
-    //Import off of the commands as modules
+    // Import off of the commands as modules
     for (const command of commands) {
       this.commands.set(command.getName(), command);
       commandsToDeploy.push(command.toJSON());
@@ -38,17 +34,17 @@ export default class CommandLoader {
 
     this.client.application?.commands.set([]);
 
-    //Push to Discord
+    // Push to Discord
     if (process.env.MODE == "guild") {
       rest
         .put(Routes.applicationGuildCommands(applicationId, process.env.GUILD_ID as string), {
           body: commandsToDeploy,
         })
         .then(() => {
-          console.log(`${this.commands.size} commands deployed`);
+          Logger.log("CommandLoader", `${this.commands.size} commands deployed`);
         })
         .catch((err) => {
-          console.error(err);
+          Logger.error("CommandLoader", err);
         });
     } else {
       rest
@@ -56,14 +52,14 @@ export default class CommandLoader {
           body: commandsToDeploy,
         })
         .then(() => {
-          console.log(`${this.commands.size} commands deployed`);
+          Logger.log("CommandLoader", `${this.commands.size} commands deployed`);
         })
         .catch((err) => {
-          console.error(err);
+          Logger.error("CommandLoader", err);
         });
     }
 
-    //Handle running commands, and direct them to the correct handler function
+    // Handle running commands, and direct them to the correct handler function
     this.client.on("interactionCreate", (interaction) => {
       // handle autocomplete
       if (interaction.isAutocomplete()) {
@@ -80,7 +76,7 @@ export default class CommandLoader {
       if (interaction.isChatInputCommand() && command.isChatInputCommandHandler())
         return command.run(interaction);
       if (!interaction.isChatInputCommand() && !command.isChatInputCommandHandler())
-        return command.run(interaction);
+        return command.run(interaction as any);
     });
   }
 

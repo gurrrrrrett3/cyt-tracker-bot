@@ -329,7 +329,9 @@ export default class GuildMessageManager {
 
         embed.setTimestamp();
 
-        this.updatesChannel!.send({ embeds: [embed] });
+        this.updatesChannel!.send({ embeds: [embed] }).catch((err) => {
+          console.error(err);
+        })
       });
     }
   }

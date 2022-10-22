@@ -1,9 +1,9 @@
 import {
   ApplicationCommandType,
   ContextMenuCommandBuilder,
-  ContextMenuCommandInteraction,
   LocaleString,
   LocalizationMap,
+  MessageContextMenuCommandInteraction,
 } from "discord.js";
 import CommandBuilder from "./customSlashCommandBuilder";
 
@@ -11,7 +11,7 @@ export default class CustomMessageContextMenuCommandBuilder {
   protected enabled: boolean = true;
   private _builder = new ContextMenuCommandBuilder().setType(ApplicationCommandType.Message);
   private _module = "";
-  execute: (interaction: ContextMenuCommandInteraction) => Promise<void> = async () => Promise.resolve();
+  execute: (interaction: MessageContextMenuCommandInteraction) => any = async () => Promise.resolve();
 
   constructor() {}
 
@@ -22,7 +22,7 @@ export default class CustomMessageContextMenuCommandBuilder {
     return this;
   }
 
-  setFunction(callback: (interaction: ContextMenuCommandInteraction) => Promise<void>): this {
+  setFunction(callback: (interaction: MessageContextMenuCommandInteraction) => any): this {
     this.execute = callback;
     return this;
   }
@@ -39,6 +39,16 @@ export default class CustomMessageContextMenuCommandBuilder {
 
   setNameLocalizations(localizedNames: LocalizationMap | null) {
     this._builder.setNameLocalizations(localizedNames);
+    return this;
+  }
+
+  setDefaultMemberPermissions(permissions: bigint) {
+    this._builder.setDefaultMemberPermissions(permissions);
+    return this;
+  }
+
+  setDMPermission(permission: boolean) {
+    this._builder.setDMPermission(permission);
     return this;
   }
 
@@ -66,7 +76,7 @@ export default class CustomMessageContextMenuCommandBuilder {
     return true;
   }
 
-  run(interaction: ContextMenuCommandInteraction): Promise<void> {
+  run(interaction: MessageContextMenuCommandInteraction): Promise<void> {
     if (interaction.commandType == ApplicationCommandType.Message) {
       this.execute(interaction);
     }

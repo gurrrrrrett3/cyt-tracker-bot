@@ -14,8 +14,8 @@ export default class DiscordModule extends Module {
     return bot.moduleLoader.getModule("discord") as DiscordModule;
   }
 
-  public override async onLoad(client: Client): Promise<void> {
-    client.on("guildCreate", async (guild) => {
+  public override async onLoad(): Promise<boolean> {
+    bot.client.on("guildCreate", async (guild) => {
       await db.discordSettings.create({
         data: {
           guildId: guild.id,
@@ -23,8 +23,10 @@ export default class DiscordModule extends Module {
       });
     });
 
-    client.on("ready", async () => {
+    bot.client.on("ready", async () => {
       this.messageManager = new MessageManager();
     });
+
+    return true;
   }
 }

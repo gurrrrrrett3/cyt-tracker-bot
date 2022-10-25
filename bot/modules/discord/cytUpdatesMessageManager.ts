@@ -2,35 +2,16 @@ import { Client, Colors, Embed, EmbedBuilder, Message, TextChannel } from "disco
 import { db } from "../../..";
 import Town from "../map/resources/town";
 
-export default class GuildMessageManager {
+export default class CYTUpdatesMessageManager {
   public statusMssage: Message | null = null;
   public statusChannel: TextChannel | null = null;
   public updatesChannel: TextChannel | null = null;
 
-  constructor(private client: Client, public guildId: string) {}
+  constructor(private client: Client) {
+    this.loadChannels();
+  }
 
   public async handleUpdate(data: UpdateFrame) {
-    const guildSettings = await db.discordSettings.findFirst({
-      where: {
-        guildId: this.guildId,
-      },
-    });
-
-    if (!guildSettings) return;
-
-    if (guildSettings.nationStatusChannelId) {
-      this.statusChannel = this.client.channels.cache.get(guildSettings.nationStatusChannelId) as TextChannel;
-    }
-
-    if (guildSettings.nationUpdatesChannelId) {
-      this.updatesChannel = this.client.channels.cache.get(
-        guildSettings.nationUpdatesChannelId
-      ) as TextChannel;
-    }
-
-    let nationName = guildSettings.nationName;
-    if (!nationName) nationName = "dontfilter"
-
     if (this.updatesChannel != null) {
       // compile updates
 
@@ -149,28 +130,6 @@ export default class GuildMessageManager {
           data: pvp,
         });
       });
-
-      // filter out changes that are not for the nation
-
-      if (nationName != "dontfilter") {
-      changes = changes.filter((change) => {
-        switch (change.type) {
-          case "townCreated":
-          case "townDestroyed":
-            return true; // always show town creation/deletion
-          case "assistantAdded":
-          case "assistantRemoved":
-          case "residentAdded":
-          case "residentRemoved":
-          case "pvpChanged":
-            return change.data.town.nation === nationName;
-          case "ownerChanged":
-            return change.data.before.nation === nationName || change.data.after.nation === nationName;
-          case "nationChanged":
-            return change.data.before.nation === nationName || change.data.after.nation === nationName;
-        }
-      });
-    }
 
       // send updates
 
@@ -319,13 +278,7 @@ export default class GuildMessageManager {
           case "nationChanged":
             embed.setTitle(`Nation Changed: ${change.data.after.name}`);
             embed.setDescription(
-              `The nation of ${change.data.after.name} has changed from ${change.data.before.nation} to ${
-                change.data.after.nation
-              }${
-                change.data.after.nation === nationName
-                  ? `\nWelcome to ${change.data.after.nation}!`
-                  : ""
-              }`
+              `The nation of ${change.data.after.name} has changed from ${change.data.before.nation} to ${change.data.after.nation}`
             );
         }
 
@@ -333,8 +286,12 @@ export default class GuildMessageManager {
 
         this.updatesChannel!.send({ embeds: [embed] }).catch((err) => {
           console.error(err);
-        })
+        });
       });
     }
+  }
+
+  private async loadChannels() {
+    this.updatesChannel = this.client.channels.cache.get("984683645203779584") as TextChannel;
   }
 }

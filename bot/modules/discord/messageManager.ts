@@ -1,9 +1,10 @@
 import { Client } from "discord.js";
 import { bot } from "../../..";
+import CYTUpdatesMessageManager from "./cytUpdatesMessageManager";
 import GuildMessageManager from "./guildMessageManager";
 
 export default class MessageManager {
-    private guilds: Map<string, GuildMessageManager> = new Map();
+    private guilds: Map<string, GuildMessageManager | CYTUpdatesMessageManager> = new Map();
     constructor() {
         this.loadGuilds();
     }
@@ -13,6 +14,8 @@ export default class MessageManager {
         guilds.forEach((guild) => {
             this.getGuildMessageManager(guild.id);
         });
+
+        this.guilds.set("909808939045113887", new CYTUpdatesMessageManager(bot.client));
     }
 
     public getGuildMessageManager(guildId: string): GuildMessageManager {

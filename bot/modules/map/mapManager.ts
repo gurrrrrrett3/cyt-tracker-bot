@@ -3,7 +3,7 @@ import { bot, db } from "../../..";
 import Time from "../../utils/time";
 import MapConnection from "./mapConnection";
 import MapDatabaseManager from "./mapDatabaseManager";
-import MapEventManager from "./mapEnventHandler";
+import MapEventManager from "./mapEventHandler";
 import PlayerSessionManager from "./sessions/playerSessionManager";
 
 export default class MapManager {

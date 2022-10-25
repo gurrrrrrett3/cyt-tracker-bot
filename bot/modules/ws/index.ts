@@ -70,7 +70,7 @@ export default class WsModule extends Module {
   }
 
    sendData(id: string, data: Object | Array<any>) {
-    Logger.log(`[WS] Sending data of length ${JSON.stringify(data).length} to ${id}`);
+    Logger.log("WS", `Sending data of length ${JSON.stringify(data).length} to ${id}`);
     this.ws.send(`botserver:${id}:${JSON.stringify(data)}`);
   }
 

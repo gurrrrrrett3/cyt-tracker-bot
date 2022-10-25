@@ -10,6 +10,7 @@ import {
   SelectMenuInteraction,
 } from "discord.js";
 import { bot } from "../..";
+import Logger from "./logger";
 import Util from "./utils";
 
 export default class PagedEmbed {
@@ -43,30 +44,30 @@ export default class PagedEmbed {
   public registerButtons() {
     if (this.options?.refreshButton) {
       bot.buttonManager.registerButton(`${this.globalKey}-refresh`, async (btn: ButtonInteraction) => {
-        await this.update(btn);
+        await this.update(btn).catch((err) => Logger.error("PAGED_EMBED", err));
       });
     }
 
     if (this.options?.firstLastButtons) {
       bot.buttonManager.registerButton(`${this.globalKey}-first`, async (btn: ButtonInteraction) => {
         this.currentPage = 0;
-        await this.update(btn);
+        await this.update(btn).catch((err) => Logger.error("PAGED_EMBED", err));
       });
 
       bot.buttonManager.registerButton(`${this.globalKey}-last`, async (btn: ButtonInteraction) => {
         this.currentPage = this.options?.pageCount || 0;
-        await this.update(btn);
+        await this.update(btn).catch((err) => Logger.error("PAGED_EMBED", err));
       });
     }
 
     bot.buttonManager.registerButton(`${this.globalKey}-prev`, async (btn: ButtonInteraction) => {
       this.currentPage--;
-      await this.update(btn);
+      await this.update(btn).catch((err) => Logger.error("PAGED_EMBED", err));
     });
 
     bot.buttonManager.registerButton(`${this.globalKey}-next`, async (btn: ButtonInteraction) => {
       this.currentPage++;
-      await this.update(btn);
+      await this.update(btn).catch((err) => Logger.error("PAGED_EMBED", err));
     });
   }
 
@@ -128,7 +129,7 @@ export default class PagedEmbed {
     await interaction.reply({
       embeds: [await this.getEmbed()],
       components: [await this.generateButtons()],
-    });
+    }).catch((err) => Logger.error("PAGED_EMBED", err));
   }
 
   public async getEmbed() {

@@ -25,7 +25,7 @@ export default class Player {
     }
 
     public isAfk(): boolean {
-        return (this.x === 0 && this.z === 0) || (this.x == 25 && this.z == 42);
+        return (this.x === 0 && this.z === 0) || (this.x == 24 && this.z == 43);
     } 
 
     public getLocation(): DatabaseLocation {

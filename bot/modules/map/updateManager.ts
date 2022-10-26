@@ -136,7 +136,8 @@ export default class MapUpdateUpdateManager {
 
     // fire the event, but only if it's not the first time
     if (!this.firstEvent) {
-    DiscordModule.getDiscordModule().messageManager!.handleUpdate(outData);
+      if (!DiscordModule.getDiscordModule().messageManager) return;
+        DiscordModule.getDiscordModule().messageManager!.handleUpdate(outData);
     } else {
       this.firstEvent = false;
     }

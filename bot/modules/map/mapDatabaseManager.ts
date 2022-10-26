@@ -187,7 +187,7 @@ export default class MapDatabaseManager {
             },
           },
         },
-      });
+      }).catch((err) => Logger.error("MapDatabaseManager", err));
     }
 
     return dbTown;
@@ -356,6 +356,8 @@ export default class MapDatabaseManager {
       const res = await this.getPlayer(username, uuid);
       if (!res) {
         Logger.error("MapDatabaseManager", `Could not create new player ${username} with uuid ${uuid}`);
+      } else {
+        Logger.info("MapDatabaseManager", `Created new player ${username} with uuid ${uuid}`);
       }
     });
 

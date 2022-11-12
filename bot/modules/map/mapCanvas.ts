@@ -1,7 +1,7 @@
 import {
     createCanvas,
     loadImage,
-} from 'canvas';
+} from '@napi-rs/canvas';
 import Logger from '../../utils/logger';
 import MapConnection from './mapConnection';
 

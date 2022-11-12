@@ -1,10 +1,4 @@
-import {
-  RESTPostAPIApplicationCommandsJSONBody,
-  Routes,
-  REST,
-  Collection,
-  Client,
-} from "discord.js";
+import { RESTPostAPIApplicationCommandsJSONBody, Routes, REST, Collection, Client } from "discord.js";
 import Logger from "../utils/logger";
 import { CustomCommandBuilder } from "./loaderTypes";
 
@@ -30,7 +24,9 @@ export default class CommandLoader {
       commandsToDeploy.push(command.toJSON());
     }
 
-    const rest = new REST({ version: "10" }).setToken(this.client.token as string ?? process.env.TOKEN as string);
+    const rest = new REST({ version: "10" }).setToken(
+      (this.client.token as string) ?? (process.env.TOKEN as string)
+    );
 
     this.client.application?.commands.set([]);
 

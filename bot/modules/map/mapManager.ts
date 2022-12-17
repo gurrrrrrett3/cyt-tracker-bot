@@ -30,12 +30,12 @@ export default class MapManager {
 
     this.townTimer = setInterval(async () => {
       this.isSaving = true;
-      await MapConnection.getTowns();
+      // await MapConnection.getTowns();
       await MapDatabaseManager.cleanPlayers();
       this.isSaving = false;
     }, new Time("5 minutes").ms());
 
-    MapConnection.getTowns();
+    // MapConnection.getTowns();
   }
 
   public async getTownList() {

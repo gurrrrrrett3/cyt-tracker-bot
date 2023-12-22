@@ -121,6 +121,10 @@ export default class Util {
     }
   }
 
+  public static getMapURL(world: string, x: number, z: number, zoom: number = 3) {
+    return `https://towny.craftyourtown.com/#${world};flat;${x},64,${z};${zoom}`
+  }
+
   public static kFormat(num: number): string {
     const letters = ["", "K", "M", "B", "T"];
     let i = 0;

@@ -31,6 +31,7 @@ export default class PagedEmbed {
       firstLastButtons?: boolean;
       footer?: boolean;
       extraFooterText?: string;
+      edit?: boolean;
     }
   ) {
     if (options?.currentPage) {
@@ -38,7 +39,12 @@ export default class PagedEmbed {
     }
 
     this.registerButtons();
-    this.send(interaction);
+
+    if (options?.edit) {
+      this.update(interaction as ButtonInteraction);
+    } else {
+      this.send(interaction);
+    }
   }
 
   public registerButtons() {
@@ -111,8 +117,9 @@ export default class PagedEmbed {
     return row;
   }
 
-  public async update(btn: ButtonInteraction) {
-    await btn.update({
+  public async update(btn: ButtonInteraction | ChatInputCommandInteraction) {
+    const func = btn.isButton() ? btn.update.bind(btn) : btn.editReply.bind(btn);
+    await func({
       embeds: [await this.getEmbed()],
       components: [await this.generateButtons()],
     }).catch(console.error);
@@ -136,9 +143,8 @@ export default class PagedEmbed {
     const embed = await this.generateEmbed(this.currentPage);
     if (this.options?.footer) {
       embed.setFooter({
-        text: `Page ${this.currentPage + 1}/${(this.options?.pageCount || 0) + 1}${
-          this.options?.extraFooterText ? ` | ${this.options?.extraFooterText}` : ""
-        }`,
+        text: `Page ${this.currentPage + 1}/${(this.options?.pageCount || 0) + 1}${this.options?.extraFooterText ? ` | ${this.options?.extraFooterText}` : ""
+          }`,
       });
     }
 

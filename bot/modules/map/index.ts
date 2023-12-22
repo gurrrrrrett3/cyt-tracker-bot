@@ -40,40 +40,40 @@ export default class MapModule extends Module {
     this.statusTimer =  setInterval(async () => {
       if (this.mm.isSaving) {
         bot.client.user?.setActivity({
-          type: ActivityType.Streaming,
-          name: "data | SAVING | commands may be unresponsive",
+          type: ActivityType.Custom,
+          name: "SAVING | commands may be unresponsive",
         });
         return;
       }
       switch (i) {
         case 0:
           bot.client.user?.setActivity({
-            type: ActivityType.Playing,
-            name: `on CYT | ${this.mm.currentPlayerData.players.length} online`,
+            type: ActivityType.Custom,
+            name: `${this.mm.currentPlayerData.players.length} online`,
           });
           break;
         case 1:
           bot.client.user?.setActivity({
-            type: ActivityType.Playing,
-            name: `on CYT | Visiting ${(await db.town.findMany()).length} Towns`,
+            type: ActivityType.Custom,
+            name: `oVisiting ${(await db.town.findMany()).length} Towns`,
           });
           break;
         case 2:
           bot.client.user?.setActivity({
-            type: ActivityType.Playing,
-            name: `on CYT | Watching ${Util.kFormat((await db.player.findMany()).length)} Players`,
+            type: ActivityType.Custom,
+            name: `Watching ${Util.kFormat((await db.player.findMany()).length)} Players`,
           });
           break;
         case 3:
           bot.client.user?.setActivity({
-            type: ActivityType.Playing,
-            name: `on CYT | Searching ${Util.kFormat((await db.teleport.findMany()).length)} Teleports`,
+            type: ActivityType.Custom,
+            name: `Searching ${Util.kFormat((await db.teleport.findMany()).length)} Teleports`,
           });
           break;
         case 4:
           bot.client.user?.setActivity({
-            type: ActivityType.Playing,
-            name: `on CYT | Tracking ${Util.kFormat((await db.session.findMany()).length)} Sessions`,
+            type: ActivityType.Custom,
+            name: `Tracking ${Util.kFormat((await db.session.findMany()).length)} Sessions`,
           });
       }
       i++;

@@ -1,4 +1,5 @@
 import { db } from "../../..";
+import Time from "../../utils/time";
 
 export default class TrankManager {
   public static async getAllTeleportsByCoords(world: string, x: number, z: number, radius: number = 5) {
@@ -86,5 +87,16 @@ export default class TrankManager {
             },
         });
         return trank   
+    }
+
+    public static async getTrankLeaderboard(duration: Time, limit: number = 10) {
+
+        const tranks = await db.trank.findMany();
+        const teleports = await db.teleport.findMany();
+        
+
+        return tranks;
+
+
     }
 }

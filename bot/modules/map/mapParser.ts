@@ -94,11 +94,9 @@ export default class MapParser {
     const fixedTowns = towns.map((t) => {
       const pObjects = townPolygons.filter((p) => p[0].name == t.name);
       const polygons = pObjects.map((p) => p.map((p) => p.polygon))[0];
-      t.polygon = polygons;
+      t.polygon = polygons as Polygon[];
       return t;
     });
-
-    fixedTowns.map((t) => t.toDb());
 
     return fixedTowns;
   }

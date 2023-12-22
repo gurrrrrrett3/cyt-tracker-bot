@@ -5,9 +5,11 @@ import MapConnection from "./mapConnection";
 import MapDatabaseManager from "./mapDatabaseManager";
 import MapEventManager from "./mapEventHandler";
 import PlayerSessionManager from "./sessions/playerSessionManager";
+import Town from "./resources/town";
 
 export default class MapManager {
   public currentPlayerData: MapPlayersReturn;
+  public currentTownData: Town[];
   public timer: NodeJS.Timer;
   public townTimer: NodeJS.Timer;
   public isSaving: boolean = false;
@@ -18,6 +20,8 @@ export default class MapManager {
       players: [],
       max: 0,
     };
+
+    this.currentTownData = [];
 
     setTimeout(PlayerSessionManager.cleanSessions, new Time("10 Seconds").ms());
 
@@ -30,15 +34,17 @@ export default class MapManager {
 
     const townUpdate = async () => {
       this.isSaving = true;
-      await MapConnection.getTowns();
-      await MapDatabaseManager.cleanPlayers();
+      const newTowns = await MapConnection.getTowns();
+      MapEventManager.townEvents(this.currentTownData, newTowns, this.currentTownData.length == 0);
+      this.currentTownData = newTowns;
       this.isSaving = false;
+
+      await MapDatabaseManager.cleanPlayers();
     }
 
-    this.townTimer = setInterval(townUpdate, new Time("5 minutes").ms());
+    this.townTimer = setInterval(townUpdate, new Time("5 seconds").ms());
 
     townUpdate();
-    // MapConnection.getTowns();
   }
 
   public async getTownList() {

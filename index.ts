@@ -9,6 +9,7 @@ import { Client } from 'discord.js';
 import Bot from './bot/bot';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
+import Logger from './bot/utils/logger';
 
 dotenv.config();
 
@@ -28,3 +29,10 @@ export const bot = new Bot(client);
 export const db = new PrismaClient()
 
 bot.moduleLoader.loadModules()
+
+process.on("exit", async () => {
+    await db.$disconnect();
+
+    Logger.log("Bot", "Safely Disconnected from database");
+    process.exit(0);
+})

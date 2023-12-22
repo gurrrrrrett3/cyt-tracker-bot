@@ -2,6 +2,7 @@ import fetch from "node-fetch";
 import Logger from "../../utils/logger";
 import MapParser from "./mapParser";
 import Player from "./resources/player";
+import Town from "./resources/town";
 
 export default class MapConnection {
   public static readonly BASE_URL = "https://towny.craftyourtown.com/tiles/";
@@ -18,16 +19,19 @@ export default class MapConnection {
   public static async getTowns() {
     const worldList = ["minecraft_overworld"];
 
+    const townList: Town[] = [];
+
     for (const world of worldList) {
       const response = await fetch(`${MapConnection.BASE_URL}${world}/markers.json`);
       const json = (await response.json()) as MarkerFile;
       const towns = MapParser.parseMarkerFile(world, json)
+      townList.push(...towns);
+      // save all
+      Promise.all(towns.map(async (t) => t.toDb.bind(t)()));
 
-      for (const town of towns) {
-        // Logger.log("MapConnection", `Saving ${town.name}`)
-        await town.toDb()
-      }
     }
+
+    return townList;
   }
 
   public static getTileURL(world: string, x: number, y: number, zoom: 0 | 1 | 2 | 3) {

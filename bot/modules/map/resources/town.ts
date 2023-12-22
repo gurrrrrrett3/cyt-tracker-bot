@@ -1,4 +1,3 @@
-import { db } from "../../../..";
 import MapDatabaseManager from "../mapDatabaseManager";
 import Polygon from "./polygon";
 

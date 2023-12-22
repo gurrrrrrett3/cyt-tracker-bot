@@ -55,7 +55,7 @@ export default class MapModule extends Module {
         case 1:
           bot.client.user?.setActivity({
             type: ActivityType.Custom,
-            name: `oVisiting ${(await db.town.findMany()).length} Towns`,
+            name: `Visiting ${(await db.town.findMany()).length} Towns`,
           });
           break;
         case 2:

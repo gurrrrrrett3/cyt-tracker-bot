@@ -42,7 +42,7 @@ export default class MapManager {
       await MapDatabaseManager.cleanPlayers();
     }
 
-    this.townTimer = setInterval(townUpdate, new Time("5 seconds").ms());
+    this.townTimer = setInterval(townUpdate, new Time("5 minutes").ms());
 
     townUpdate();
   }

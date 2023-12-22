@@ -144,3 +144,4 @@ function nationStatChange(nationStats: {
         `**Chunks**: \`${nationStats.chunks}\` -> \`${nationStats.chunks + (town.polygon?.reduce((acc, polygon) => acc + polygon.calcuateChunkArea(), 0) || 0)}\``,
     ].join("\n")
 }
+

@@ -71,7 +71,7 @@ const Command = new SlashCommandBuilder()
         embeds: [
             new EmbedBuilder()
               .setTitle(`Teleports for ${player.username}`)
-              .setDescription(sortedCounts.map((v) => `\`${v.count} | ${v.world}:${v.x},${v.z}\``).join("\n"))
+              .setDescription(sortedCounts.map((v) => `\`${v.count} | ${v.world}:${v.x},${v.z}\``).join("\n") || "No teleports found")
               .setTimestamp(generatedAt)
         ]
     })

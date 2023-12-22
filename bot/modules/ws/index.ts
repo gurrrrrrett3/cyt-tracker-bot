@@ -15,6 +15,8 @@ export default class WsModule extends Module {
   ws!: ws;
 
   override async onLoad(): Promise<Boolean> {
+
+    return true;
     this.ws = new ws("ws://95.216.205.34:3001/")
     this.ws.on("open", () => {
       this.ws.send("botserver:ready");

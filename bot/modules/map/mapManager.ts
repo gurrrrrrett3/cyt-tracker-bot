@@ -28,13 +28,16 @@ export default class MapManager {
       this.currentPlayerData = newData;
     }, new Time("1 second").ms());
 
-    this.townTimer = setInterval(async () => {
+    const townUpdate = async () => {
       this.isSaving = true;
-      // await MapConnection.getTowns();
+      await MapConnection.getTowns();
       await MapDatabaseManager.cleanPlayers();
       this.isSaving = false;
-    }, new Time("5 minutes").ms());
+    }
 
+    this.townTimer = setInterval(townUpdate, new Time("5 minutes").ms());
+
+    townUpdate();
     // MapConnection.getTowns();
   }
 

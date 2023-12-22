@@ -22,7 +22,6 @@ export default class Util {
     });
 
     if (!user || user.uuid.startsWith("Invalid")) {
-      if (username.startsWith("BR__")) return `Bedrock-${username}`;
 
       const res = await fetch(`https://playerdb.co/api/player/minecraft/${username}`);
       const json = await res.json();

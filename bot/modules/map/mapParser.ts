@@ -62,7 +62,7 @@ export default class MapParser {
     const towns: Town[] = [];
     const townPolygons: pObject[][] = [];
 
-    const markers = data.find((marker) => marker.name === "Towny")?.markers as Marker[];
+    const markers = data.find((marker) => marker.id === "towny")?.markers as Marker[];
 
     for (const marker of markers) {
       const town = MapParser.parse(marker, world);

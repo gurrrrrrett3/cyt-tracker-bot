@@ -4,7 +4,7 @@ import MapParser from "./mapParser";
 import Player from "./resources/player";
 
 export default class MapConnection {
-  public static readonly BASE_URL = "https://map.craftyourtown.com/tiles/";
+  public static readonly BASE_URL = "https://towny.craftyourtown.com/tiles/";
 
   public static async getPlayers() {
     const response = await fetch(MapConnection.BASE_URL + "players.json");
@@ -16,7 +16,7 @@ export default class MapConnection {
   }
 
   public static async getTowns() {
-    const worldList = ["world", "earth"];
+    const worldList = ["minecraft_overworld"];
 
     for (const world of worldList) {
       const response = await fetch(`${MapConnection.BASE_URL}${world}/markers.json`);

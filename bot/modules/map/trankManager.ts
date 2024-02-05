@@ -38,7 +38,13 @@ export default class TrankManager {
   }
 
   public static async searchTranks(name: string) {
-    const tranks = await db.trank.findMany();
+    const tranks = await db.trank.findMany({
+      where: {
+        name: {
+          contains: name,
+        },
+      },
+    });
     const results = tranks.filter((trank) => trank.name.toLowerCase().includes(name.toLowerCase()));
     return results
   }
@@ -91,12 +97,9 @@ export default class TrankManager {
 
     public static async getTrankLeaderboard(duration: Time, limit: number = 10) {
 
-        const tranks = await db.trank.findMany();
-        const teleports = await db.teleport.findMany();
-        
+        const tranks = await db.trank.findMany();        
 
         return tranks;
-
-
     }
+    
 }

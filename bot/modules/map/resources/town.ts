@@ -54,8 +54,36 @@ export default class Town {
         };
     }
 
+    public getMainPolygon() {
+        return this.polygon?.find((p) => p.isInside(this.getCoords()))
+    }
+
+    public getBounds() {
+
+        // find polygon where town spawn is
+       
+        let polygon = this.getMainPolygon();
+
+        if (!polygon) {
+            return {
+                minX: this.coords.x,
+                maxX: this.coords.x,
+                minZ: this.coords.z,
+                maxZ: this.coords.z,
+            }
+        }
+
+        return polygon.getBounds();
+
+
+    }
+
+    public getCenter() {
+        return this.getMainPolygon()?.getCenter() || this.getCoords();
+    }
+
     public async toDb() {
         return await MapDatabaseManager.getTown(this)
     }
- 
+
 }

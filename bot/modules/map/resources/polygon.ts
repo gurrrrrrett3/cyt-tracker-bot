@@ -37,4 +37,22 @@ export default class Polygon {
     return area;
 
   }
+
+  public getBounds() {
+    return {
+      minX: Math.min(...this.points.map((p) => p.x)),
+      maxX: Math.max(...this.points.map((p) => p.x)),
+      minZ: Math.min(...this.points.map((p) => p.z)),
+      maxZ: Math.max(...this.points.map((p) => p.z)),
+    };
+  }
+
+  public getCenter() {
+    const bounds = this.getBounds();
+
+    return {
+      x: (bounds.minX + bounds.maxX) / 2,
+      z: (bounds.minZ + bounds.maxZ) / 2,
+    };
+  }
 }

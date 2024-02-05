@@ -4,6 +4,9 @@ import Util from "../../../utils/utils";
 import SlashCommandBuilder from "../../../loaders/objects/customSlashCommandBuilder";
 import MapDatabaseManager from "../mapDatabaseManager";
 import MapCanvas from "../mapCanvas";
+import Town from "../resources/town";
+import MapConnection from "../mapConnection";
+import MapModule from "..";
 
 const Command = new SlashCommandBuilder()
   .setName("town")
@@ -50,16 +53,20 @@ const Command = new SlashCommandBuilder()
       return;
     }
 
+    const attachment = new AttachmentBuilder(await MapCanvas.drawTownThumbnail(MapModule.getMapModule().mm.currentTownData.find((t) => t.name == townData.name)!, 3), {
+      name: `${townData.name}.png`
+  });
 
     const embed = new EmbedBuilder()
       .setTitle(townData.name)
+      .setURL(Util.getMapURL(townData.world, townData.x, townData.z))
       .setDescription(
         [
-            `**Coordinates:** ${townData.world}, ${townData.x}, ${townData.z}`,
+            `**Coordinates:** ${townData.world.replace("minecraft_", "")}, ${townData.x}, ${townData.z}`,
             `**Owner:** ${Util.formatPlayerName(townData.owner?.username)}`,
             `**Assistants:** ${townData.assistants.map((p) => Util.formatPlayerName(p.username)).join(", ")}`,
             `**Residents:** ${townData.residents.length}`,
-            townData.residents.map((p) => Util.formatPlayerName(p.username)).join(", "),
+            townData.residents.slice(0, 25).map((p) => Util.formatPlayerName(p.username)).join(", ") + (townData.residents.length > 25 ? ` + ${townData.residents.length - 25} more...` : ""),
             "",
             "**__NOTE: Town preview is in BETA, bugs are expected__**"
         ].join("\n")
@@ -68,23 +75,11 @@ const Command = new SlashCommandBuilder()
         text: `Town ID: ${townData.id}`,
       })
       .setColor(Colors.Blue)
-      
-    const attachment = new AttachmentBuilder(await MapCanvas.drawMapThumbnail(townData.world, townData.x, townData.z, 2), {
-        name: `${townData.name}.png`
-    });
+      .setImage(`attachment://${townData.name}.png`);
 
     interaction.editReply({
       embeds: [embed],
-        files: [attachment],
-    }).then((msg) => {
-        const url = msg.attachments.first()?.url
-        if (url) {
-            embed.setImage(url)
-            interaction.editReply({
-                embeds: [embed],
-                attachments: []
-            })
-        }
+      files: [attachment]
     })
   });
 

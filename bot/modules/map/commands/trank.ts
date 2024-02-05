@@ -1,6 +1,7 @@
 import {
   ActionRowBuilder,
   ChatInputCommandInteraction,
+  Colors,
   EmbedBuilder,
   ModalBuilder,
   ModalSubmitInteraction,
@@ -59,8 +60,12 @@ const Command = new SlashCommandBuilder()
             const embed = new EmbedBuilder()
               .setTitle(t.data.name)
               .setDescription(
-                `**Location:** ${t.data.world}: ${t.data.x}, ${t.data.z}\n${t.data.description}\n\n**Uses:** ${t.teleports.length}\n**Unique Uses: **${playerIds.length}\n**Uses This Week:** ${usesThisWeek}`
-              );
+                `**Location:** ${t.data.world}: ${t.data.x}, ${t.data.z}\n${t.data.description}\n\n**Uses:** ${Util.kFormat(t.teleports.length)}\n**Unique Uses: **${Util.kFormat(playerIds.length)}\n**Uses This Week:** ${Util.kFormat(usesThisWeek)}`
+              )
+              .setColor(Colors.Blue)
+              .setFooter({
+                text: `Last updated by ${t.data.updatedBy}`
+              });
 
             await interaction.reply({ embeds: [embed] });
           })
@@ -107,11 +112,27 @@ const Command = new SlashCommandBuilder()
               .setChoices(
                 {
                   name: "Overworld",
-                  value: "world",
+                  value: "minecraft_overworld",
                 },
                 {
-                  name: "Earth",
-                  value: "earth",
+                  name: "Nether",
+                  value: "minecraft_the_nether",
+                },
+                {
+                  name: "End",
+                  value: "minecraft_the_end",
+                },
+                {
+                  name: "Spawn",
+                  value: "minecraft_spawn",
+                },
+                {
+                  name: "Extras",
+                  value: "minecraft_extras",
+                },
+                {
+                  name: "Blank",
+                  value: "minecraft_blank",
                 }
               )
           )
@@ -184,7 +205,7 @@ async function openEditor(
             .setPlaceholder("Name")
             .setStyle(TextInputStyle.Short)
             .setMinLength(2)
-            .setMaxLength(20)
+            .setMaxLength(100)
             .setValue(t.name)
         ),
         new ActionRowBuilder<TextInputBuilder>().addComponents(

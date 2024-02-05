@@ -5,6 +5,7 @@ import SlashCommandBuilder from "../../../loaders/objects/customSlashCommandBuil
 import Logger from "../../../utils/logger";
 import Util from "../../../utils/utils";
 import MapDatabaseManager from "../mapDatabaseManager";
+import PagedEmbed from "../../../utils/pagedEmbed";
 
 const Command = new SlashCommandBuilder()
   .setName("townlastseen")
@@ -41,33 +42,39 @@ const Command = new SlashCommandBuilder()
       return;
     }
 
-    const data: {username: string, lastSeen: Date}[] = [];
+    const data: { username: string, lastSeen: Date }[] = []
 
-    for (const username of residents) {
-        const player = await MapDatabaseManager.getPlayer(username);
-        if (!player) continue;
+    await Promise.all(residents.map(async (username) => {
 
-        const lastSeen = player.Session.at(-1)?.endedAt;
-        if (!lastSeen) continue;
+      const player = await MapDatabaseManager.getPlayer(username);
+      if (!player) return;
 
-        data.push({
-            username,
-            lastSeen
-        });
+      const lastSeen = player.Session.at(-1)?.endedAt;
+      if (!lastSeen) return;
 
-    }
+      data.push({
+        username,
+        lastSeen
+      });
+    }));
 
     const desc = data.sort((a, b) => b.lastSeen.getTime() - a.lastSeen.getTime()).map((d) => `**${d.username}**: ${Util.formatDiscordTime(d.lastSeen, "longDateTime")} (${Util.formatDiscordTime(d.lastSeen, "relative")})`).join("\n");
 
-    const embed = new EmbedBuilder()
-        .setTitle(`Last Seen for ${town}`)
-        .setDescription(desc)
-        .setColor(Colors.Blue)
-        .setTimestamp();
+    const paged = Util.pagnateString(desc, '\n')
 
-    await interaction.editReply({
-        embeds: [embed]
-    });
+
+    new PagedEmbed(interaction, async (page) => {
+      return new EmbedBuilder()
+        .setTitle(`Last Seen for ${town}`)
+        .setDescription(paged[page])
+        .setColor(Colors.Yellow)
+    }, {
+      footer: true,
+      extraFooterText: `${data.length} residents found.`,
+      firstLastButtons: true,
+      pageCount: paged.length,
+      edit: true
+    })
   });
 
 export default Command;

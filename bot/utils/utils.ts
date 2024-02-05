@@ -182,4 +182,20 @@ export default class Util {
     }
     return color;
   }
+
+  public static pagnateString(str: string, seperateAt: string, maxLength: number = 4096) {
+
+    const pages = str.split(seperateAt);
+    const paged: string[] = [];
+    let currentPage = "";
+    for (const page of pages) {
+      if (currentPage.length + page.length > maxLength) {
+        paged.push(currentPage);
+        currentPage = "";
+      }
+      currentPage += page + seperateAt;
+    }
+    paged.push(currentPage);
+    return paged;
+  }
 }

@@ -190,14 +190,18 @@ export default class CustomSlashCommandSubcommandBuilder {
             CommandBuilder.cleanAutocompleteResponse(
               await selectedOption.autocompleteCallback(interaction, interaction.options.getFocused())
             )
-          );
+          ).catch((e) => {
+            Logger.error(`CustomSlashCommandBuilder: ${this.name}`, this.name, e);
+          })
           return;
         } else {
           await interaction.respond(
             CommandBuilder.cleanAutocompleteResponse(
               await selectedOption.autocompleteCallback(interaction, Number(interaction.options.getFocused()))
             )
-          );
+          ).catch((e) => {
+              Logger.error(`CustomSlashCommandBuilder: ${this.name}`, this.name, e);
+            })
           return;
         }
       }

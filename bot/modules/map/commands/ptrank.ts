@@ -1,8 +1,10 @@
-import { EmbedBuilder } from "discord.js";
+import { Colors, EmbedBuilder } from "discord.js";
 import { db } from "../../../..";
 import Util from "../../../utils/utils";
 import SlashCommandBuilder from "../../../loaders/objects/customSlashCommandBuilder";
 import MapDatabaseManager from "../mapDatabaseManager";
+import PagedEmbed from "../../../utils/pagedEmbed";
+import Time from "../../../utils/time";
 
 const Command = new SlashCommandBuilder()
   .setName("ptrank")
@@ -67,13 +69,36 @@ const Command = new SlashCommandBuilder()
 
     const sortedCounts = useCounts.sort((a, b) => b.count - a.count) 
 
-    interaction.reply({
-        embeds: [
-            new EmbedBuilder()
-              .setTitle(`Teleports for ${player.username}`)
-              .setDescription(sortedCounts.map((v) => `\`${v.count} | ${v.world}:${v.x},${v.z}\``).join("\n") || "No teleports found")
-              .setTimestamp(generatedAt)
-        ]
+    new PagedEmbed(interaction, async (page) => {
+
+      return new EmbedBuilder()
+        .setTitle(`${player.username}'s Top Teleports`)
+        .setDescription(
+        await Promise.all(sortedCounts
+            .slice(page * 10, page * 10 + 10)
+            .map(async (t, index) => {
+              
+              const rank = await db.trank.findFirst({
+                where: {
+                  world: t.world,
+                  x: t.x,
+                  z: t.z
+                }
+              })
+
+             if (!rank) return `**${index + 1 + page * 10}.** ${t.world.replace("minecraft_", "")}: ${t.x}, ${t.z} - ${Util.kFormat(t.count)} uses` 
+              return `**${index + 1 + page * 10}.** ${rank.name} - ${Util.kFormat(t.count)} uses`
+
+            }))
+            .then((ranks) => ranks.join("\n"))
+        )
+        .setColor(Colors.Blue)
+        .setTimestamp()
+    }, {
+      pageCount: Math.ceil(sortedCounts.length / 10),
+      firstLastButtons: true,
+      extraFooterText: `${Util.kFormat(teleports.length)} teleports in ${new Time(Date.now() - generatedAt.getTime()).toString(true)}`,
+      footer: true,
     })
   });
 

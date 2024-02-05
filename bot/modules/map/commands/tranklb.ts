@@ -4,6 +4,7 @@ import Util from "../../../utils/utils";
 import PagedEmbed from "../../../utils/pagedEmbed";
 import SlashCommandBuilder from "../../../loaders/objects/customSlashCommandBuilder";
 import { Trank } from "@prisma/client";
+import Time from "../../../utils/time";
 
 const Command = new SlashCommandBuilder()
     .setName('tranklb')
@@ -52,6 +53,8 @@ const Command = new SlashCommandBuilder()
             5: 15552000,
             6: 31536000
         }
+
+        const now = Date.now()
 
         await interaction.reply({
             embeds: [
@@ -102,19 +105,21 @@ const Command = new SlashCommandBuilder()
             } 
         })
 
-
         // sort teleports by most teleported
 
         const sortedTranks = [...tRankMap.entries()].sort((a, b) => b[1].count - a[1].count)
 
         // build embed
 
+        const elapsed = Date.now() - now
+
         new PagedEmbed(interaction, async (page) => {
             return new EmbedBuilder()
                 .setTitle('Teleport Rank Leaderboard')
                 .setDescription(sortedTranks.slice(page * 10, page * 10 + 10).map((rank, index) => {
-
-                    return rank[1].t.world == 'minecraft_overworld' ? `${index + 1 + page * 10}. [${rank[1].t.world.replace("minecraft_", "")}: ${rank[1].t.x}, ${rank[1].t.z}](${Util.getMapURL(rank[1].t.world, rank[1].t.x, rank[1].t.z, 5)}) - ${rank[1].count} teleports` : `${index + 1 + page * 10}. ${rank[1].t.world.replace("minecraft_", "")}: ${rank[1].t.x}, ${rank[1].t.z} - ${rank[1].count} teleports`
+                    const name = rank[1].t.name.match(/^minecraft_[a-z]+:[-\d]+:[-\d]+/g) ? `${rank[1].t.world.replace("minecraft_", "")}: ${rank[1].t.x}, ${rank[1].t.z}` : rank[1].t.name
+                    const idx = index + 1 + page * 10
+                    return rank[1].t.world == 'minecraft_overworld' ? `${idx}. [${name}](${Util.getMapURL(rank[1].t.world, rank[1].t.x, rank[1].t.z, 5)}) - ${Util.kFormat(rank[1].count)} teleports` : `${idx}. ${name} - ${Util.kFormat(rank[1].count)} teleports`
                 }).join('\n'))
                 .setColor(Colors.Yellow)
                 .setTimestamp(new Date())
@@ -123,7 +128,8 @@ const Command = new SlashCommandBuilder()
             refreshButton: false,
             pageCount: Math.ceil(sortedTranks.length / 10),
             footer: true,
-            extraFooterText: `Aggregated from ${Util.kFormat(tRanks.length)} tranks and ${Util.kFormat(teleports.length)} teleports`
+            extraFooterText: `Aggregated from ${Util.kFormat(tRanks.length)} tranks and ${Util.kFormat(teleports.length)} teleports in ${new Time(elapsed).toString(true)}`
+
         })
 
     })

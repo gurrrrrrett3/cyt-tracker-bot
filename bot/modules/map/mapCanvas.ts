@@ -4,95 +4,115 @@ import {
 } from '@napi-rs/canvas';
 import Logger from '../../utils/logger';
 import MapConnection from './mapConnection';
+import Town from './resources/town';
+import MapModule from '.';
 
 export default class MapCanvas {
 
-    public static async drawMapThumbnail(world: string, x: number, y: number, zoom: 0 | 1 | 2 | 3) {
-        const canvas = createCanvas(1536, 1536);
-        const ctx = canvas.getContext("2d");
+    public static async drawTownThumbnail(town: Town, zoom: 0 | 1 | 2 | 3) {
+
+        const bounds = town.getBounds();
+        const img = await this.getMapImage(bounds, town.world, zoom);
+        return img.canvas.toBuffer("image/png");
+    }
+
+
+    public static async getMapImage(bounds: {
+        minX: number,
+        maxX: number,
+        minZ: number,
+        maxZ: number,
+    }, world: string, zoom: 0 | 1 | 2 | 3) {
 
         const tileSizes = [4096, 2048, 1024, 512];
         const tileSize = tileSizes[zoom];
 
-        const tileX = Math.floor(x / tileSize);
-        const tileY = Math.floor(y / tileSize);
+        const minX = Math.floor(bounds.minX / tileSize);
+        const minY = Math.floor(bounds.minZ / tileSize);
+        const maxX = Math.floor(bounds.maxX / tileSize);
+        const maxY = Math.floor(bounds.maxZ / tileSize);
 
-        // get all tiles in a 3x3 grid
-        const tiles = [
+        const tiles = [];
 
-            // top row
-            await loadImage(MapConnection.getTileURL(world, tileX - 1, tileY - 1, zoom)),
-            await loadImage(MapConnection.getTileURL(world, tileX, tileY - 1, zoom)),
-            await loadImage(MapConnection.getTileURL(world, tileX + 1, tileY - 1, zoom)),
+        for (let x = minX; x <= maxX; x++) {
+            for (let y = minY; y <= maxY; y++) {
+                tiles.push(await loadImage(MapConnection.getTileURL(world, x, y, zoom)));
+            }
+        }
 
-            // middle row
+        const totalWidth = (maxX - minX + 1) * 512;
+        const totalHeight = (maxY - minY + 1) * 512;
 
-            await loadImage(MapConnection.getTileURL(world, tileX - 1, tileY, zoom)),
-            await loadImage(MapConnection.getTileURL(world, tileX, tileY, zoom)),
-            await loadImage(MapConnection.getTileURL(world, tileX + 1, tileY, zoom)),
+        const canvas = createCanvas(totalWidth, totalHeight);
+        const ctx = canvas.getContext("2d");
 
-            // bottom row
+        let i = 0;
+        for (let x = minX; x <= maxX; x++) {
+            for (let y = minY; y <= maxY; y++) {
+                ctx.drawImage(tiles[i], (x - minX) * 512, (y - minY) * 512);
+                i++;
+            }
+        }
 
-            await loadImage(MapConnection.getTileURL(world, tileX - 1, tileY + 1, zoom)),
-            await loadImage(MapConnection.getTileURL(world, tileX, tileY + 1, zoom)),
-            await loadImage(MapConnection.getTileURL(world, tileX + 1, tileY + 1, zoom)),
-            
-        ];
+        // draw bounds
+        // ctx.beginPath();
+        // ctx.rect((bounds.minX - (minX * tileSize)), (bounds.minZ - (minY * tileSize)), bounds.maxX - bounds.minX, bounds.maxZ - bounds.minZ);
+        // ctx.lineWidth = 5;
+        // ctx.strokeStyle = 'red';
+        // ctx.stroke();
 
-        // draw tiles to canvas
-        ctx.drawImage(tiles[0], 0, 0);
-        ctx.drawImage(tiles[1], 512, 0);
-        ctx.drawImage(tiles[2], 1024, 0)
+        // crop to bounds
+        const croppedCanvas = createCanvas(bounds.maxX - bounds.minX, bounds.maxZ - bounds.minZ);
+        const croppedCtx = croppedCanvas.getContext("2d");
 
-        ctx.drawImage(tiles[3], 0, 512);
-        ctx.drawImage(tiles[4], 512, 512);
-        ctx.drawImage(tiles[5], 1024, 512);
+        croppedCtx.drawImage(canvas, -bounds.minX + (minX * tileSize), -bounds.minZ + (minY * tileSize));
 
-        ctx.drawImage(tiles[6], 0, 1024);
-        ctx.drawImage(tiles[7], 512, 1024);
-        ctx.drawImage(tiles[8], 1024, 1024);
-
-        // x offset of the player on the grid
-        const xOffset = x - (tileX * tileSize) + 512;
-        const yOffset = y - (tileY * tileSize) + 512;
-
-        // crop to 512x512 centered on the player
-        const cropX = xOffset - 256;
-        const cropY = yOffset - 256;
-
-        Logger.log("Canvas", cropX, cropY);
-
-        const cropped = canvas.getContext("2d").getImageData(cropX, cropY, 512, 512)
-        const croppedCanvas = createCanvas(512, 512);
-        const cctx = croppedCanvas.getContext("2d");
-
-        cctx.putImageData(cropped, 0, 0);
-
-        return croppedCanvas.toBuffer("image/png");
+        return {
+            x: bounds.minX - (minX * tileSize),
+            y: bounds.minZ - (minY * tileSize),
+            width: bounds.maxX - bounds.minX,
+            height: bounds.maxZ - bounds.minZ,
+            canvas,
+            crop: croppedCanvas,
+        }
     }
 
-    public static async drawPlayerMapThumbnail(world: string, x: number, y: number, zoom: 0 | 1 | 2 | 3, yaw: number) {
-    const canvas = createCanvas(512, 512);
-    const ctx = canvas.getContext("2d");
-    
-    const dataURI = await MapCanvas.drawMapThumbnail(world, x, y, zoom);
-    const mapImage = await loadImage(dataURI);
 
-    ctx.drawImage(mapImage, 0, 0);
+    public static async drawPlayerThumbnail(player: Player, zoom: 0 | 1 | 2 | 3, showOtherPlayers: boolean = true) {
+        const img = await this.getMapImage({
+            minX: player.x - 64,
+            maxX: player.x + 64,
+            minZ: player.z - 64,
+            maxZ: player.z + 64,
+        }, player.world, zoom);
 
-    const yawRadians = yaw * (Math.PI / 180);
+        const center = img.crop.width / 2;
 
-    // draw a triangle at the player's position and rotation
-    ctx.beginPath();
-    ctx.moveTo(256, 256);
-    ctx.lineTo(256 + (Math.cos(yawRadians) * 20), 256 + (Math.sin(yawRadians) * 20));
-    ctx.lineTo(256 + (Math.cos(yawRadians + (Math.PI / 2)) * 20), 256 + (Math.sin(yawRadians + (Math.PI / 2)) * 20));
-    ctx.closePath();
-    ctx.lineWidth = 10;
-    ctx.strokeStyle = "#FFF";
-    ctx.fill();
+        const ctx = img.crop.getContext("2d");
 
-    return `data:image/png;base64,${canvas.toBuffer("image/png").toString("base64")}`;
+        if (showOtherPlayers) {
+            MapModule.getMapModule().mm.currentPlayerData.players.forEach((p) => {
+
+                if (p.name == player.name) return;
+
+                const x = p.x - player.x;
+                const z = p.z - player.z;
+
+                if (x < 0 || x > 128 || z < 0 || z > 128) return;
+
+                ctx.beginPath();
+                ctx.arc(x, z, 3, 0, 2 * Math.PI, false);
+                ctx.fillStyle = 'blue';
+                ctx.fill();
+            })
+        }
+
+        ctx.beginPath();
+        ctx.arc(center, center, 5, 0, 2 * Math.PI, false);
+        ctx.fillStyle = 'red';
+        ctx.fill();
+
+        return img.crop.toBuffer("image/png");
     }
 
 }

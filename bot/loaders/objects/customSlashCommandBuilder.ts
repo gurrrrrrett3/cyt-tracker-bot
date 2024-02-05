@@ -289,14 +289,18 @@ export default class CommandBuilder {
               interaction,
               interaction.options.getFocused()
             );
-            interaction.respond(CommandBuilder.cleanAutocompleteResponse(res));
+            interaction.respond(CommandBuilder.cleanAutocompleteResponse(res)).catch((e) => {
+              Logger.error(`CustomSlashCommandBuilder: ${this.getName()}`, this.getName(), e);
+            })
             return;
           } else {
             const res = await selectedObject.autocompleteCallback(
               interaction,
               Number(interaction.options.getFocused())
             );
-            interaction.respond(CommandBuilder.cleanAutocompleteResponse(res));
+            interaction.respond(CommandBuilder.cleanAutocompleteResponse(res)).catch((e) => {
+              Logger.error(`CustomSlashCommandBuilder: ${this.getName()}`, this.getName(), e);
+            })
           }
         }
       }

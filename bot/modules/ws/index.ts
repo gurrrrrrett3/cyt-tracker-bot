@@ -17,7 +17,7 @@ export default class WsModule extends Module {
   override async onLoad(): Promise<Boolean> {
 
     return true;
-    this.ws = new ws("ws://95.216.205.34:3001/")
+    this.ws = new ws("ws://node1.gart.sh:3001/")
     this.ws.on("open", () => {
       this.ws.send("botserver:ready");
       Logger.log("WS", "Connected to websocket server");
@@ -56,12 +56,6 @@ export default class WsModule extends Module {
         break;
         case "mapTile":
         this.sendData(id, await MapConnection.getMapTileAtCoordsAsDataURI(d.world, d.x, d.y, d.zoom));
-        break
-        case "mapThumbnail":
-        this.sendData(id, await MapCanvas.drawMapThumbnail(d.world, d.x, d.y, d.zoom));
-        break
-        case "playerMapThumbnail":
-        this.sendData(id, await MapCanvas.drawPlayerMapThumbnail(d.world, d.x, d.y, d.zoom, d.yaw));
         break
         case "ticker":
         this.sendData(id, await MapModule.getMapModule().mm.getTicker());

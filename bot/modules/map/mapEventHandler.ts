@@ -129,7 +129,26 @@ export default class MapEventManager {
     const newNations = new Set(newTowns.map((town) => town.nation));
 
     const nationsCreated = [...newNations].filter((nation) => !oldNations.has(nation));
-    const nationsDeleted = [...oldNations].filter((nation) => !newNations.has(nation));    
+    const nationsDeleted = [...oldNations].filter((nation) => !newNations.has(nation));
+
+    for (const ev of [
+      townsCreated,
+      townsDeleted,
+      townNationChanged,
+      townNameChanged,
+      townCoordsChanged,
+      townOwnerChanged,
+      townAssistantsChanged,
+      townResidentsChanged,
+      townClaimChanged,
+      nationsCreated,
+      nationsDeleted
+    ]) {
+      if (ev.length > 0) {
+        Logger.log("MapEventHandler", "Town update event detected");
+        Logger.log("MapEventHandler", ev);
+      }
+    }
 
     BroglandsPostManager.handleTownUpdateData({
       townsCreated,

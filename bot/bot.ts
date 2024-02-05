@@ -30,7 +30,6 @@ export default class Bot {
     this.modalManager = new ModalManager(this.client);
 
     this.client.on("messageCreate", async (message) => {
-      console.log(message.stickers)
       const sticker = message.stickers.first();
       if (!sticker) return;
 

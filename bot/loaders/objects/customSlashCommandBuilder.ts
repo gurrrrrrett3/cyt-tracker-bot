@@ -266,8 +266,6 @@ export default class CommandBuilder {
         ? interaction.options.getSubcommandGroup()
         : null;
 
-      Logger.log("", subcommandGroup, subcommand);
-
       if (subcommandGroup) {
         const subcommandGroupObject = this._customOptions.find(
           (o) => o instanceof CustomSlashCommandSubcommandGroupBuilder && o.name === subcommandGroup
@@ -290,7 +288,7 @@ export default class CommandBuilder {
               interaction.options.getFocused()
             );
             interaction.respond(CommandBuilder.cleanAutocompleteResponse(res)).catch((e) => {
-              Logger.error(`CustomSlashCommandBuilder: ${this.getName()}`, this.getName(), e);
+              Logger.error(`CustomSlashCommandBuilder: /${this.getName()}`, e);
             })
             return;
           } else {
@@ -299,13 +297,13 @@ export default class CommandBuilder {
               Number(interaction.options.getFocused())
             );
             interaction.respond(CommandBuilder.cleanAutocompleteResponse(res)).catch((e) => {
-              Logger.error(`CustomSlashCommandBuilder: ${this.getName()}`, this.getName(), e);
+              Logger.error(`CustomSlashCommandBuilder: /${this.getName()}`, e);
             })
           }
         }
       }
     } catch (e) {
-      Logger.error(`CustomSlashCommandBuilder`, this.getName(), e);
+      Logger.error(`CustomSlashCommandBuilder: /${this.getName()}`, e);
     }
   }
 
